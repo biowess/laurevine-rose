@@ -1,0 +1,120 @@
+{
+  "name": "laurevine-rose",
+  "version": "1.0.0",
+  "description": "Laurevine Rose",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:backend": "pyinstaller --clean --noconfirm run.spec",
+    "dist:win": "npm run build:backend && electron-builder --win",
+    "dist:mac": "npm run build:backend && electron-builder --mac",
+    "dist:linux": "npm run build:backend && electron-builder --linux AppImage deb rpm"
+  },
+  "build": {
+    "appId": "com.biowess.laurevinerose",
+    "productName": "Laurevine Rose",
+    "directories": {
+      "output": "dist-package"
+    },
+    "files": [
+      "!**/*",
+      "main.js",
+      "preload.js",
+      "index.html",
+      "splash.html",
+      "package.json",
+      "setup/**/*",
+      "css/**/*",
+      "js/**/*",
+      "fonts/**/*",
+      "Assets/**/*",
+      "!**/__pycache__/**",
+      "!**/*.pyc",
+      "!**/*.pyo",
+      "!**/.pytest_cache/**",
+      "!tests/**",
+      "!docs/**",
+      "!DEV_NOTES.md",
+      "!IMPLEMENTATION_PLAN.md",
+      "!representative_sample_deck.*",
+      "!**/*.spec",
+      "!fonts/.cache/**"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/run",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "LICENSE.txt",
+        "to": "."
+      },
+      {
+        "from": "THIRD_PARTY_NOTICES.txt",
+        "to": "."
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "Assets/appicon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "Assets/appicon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "category": "Office",
+      "maintainer": "Biowess <contact@biowess.com>",
+      "icon": "Assets/appicon.png"
+    },
+    "deb": {
+      "priority": "optional"
+    },
+    "rpm": {
+      "fpm": [
+        "--rpm-os",
+        "linux"
+      ]
+    }
+  },
+  "homepage": "https://biowess.com",
+  "author": {
+    "name": "Biowess",
+    "email": "contact@biowess.com"
+  },
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "private": true,
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "electron-builder": "^25.1.8"
+  }
+}

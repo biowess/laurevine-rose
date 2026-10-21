@@ -1,0 +1,62 @@
+LAUREVINE ROSE — SOFTWARE LICENSE AGREEMENT
+
+Laurevine Rose, Version 1.0.0
+Copyright © 2026 Biowess. All rights reserved in the Original Work described below.
+
+Laurevine Rose is free software whose source code is made available. It is licensed, not sold. This agreement governs your use of the software and its associated materials.
+
+1. What This License Covers
+
+This license applies only to the original work of the copyright holder in Laurevine Rose (the "Original Work"): its original source code, implementations, architecture, interface and visual design, branding, name, artwork, and documentation.
+
+This license does not apply to third-party libraries, frameworks, fonts, runtimes, or other components used by or distributed with Laurevine Rose. Those remain the property of their respective owners and are governed solely by their own licenses and notices. Nothing in this agreement restricts your rights under those licenses.
+
+2. Permission to Use
+
+Subject to this agreement, you are granted a free, worldwide, non-exclusive, revocable license to install, run, and use Laurevine Rose, and to read its source code. Laurevine Rose is provided free of charge and is not sold.
+
+No ownership of the Original Work is transferred to you.
+
+3. Restrictions
+
+Without prior written permission from the copyright holder, you may not:
+
+- Sell, rent, lease, or charge for Laurevine Rose or the Original Work, or include them in a paid product or service.
+- Redistribute the Original Work, in modified or unmodified form, under a different name or as your own work.
+- Copy, extract, or incorporate the Original Work's source code, designs, interface, algorithms, parser, or modules into another application or project, except as permitted in Section 4.
+- Remove or alter copyright notices, ownership notices, or license information.
+- Use the name "Laurevine Rose", its logo, or its artwork to identify any other product.
+
+You may modify the software for your own private use.
+
+4. Reuse and Open-Source Projects
+
+Attribution alone does not grant permission to reuse the Original Work. Reuse of any part of the Original Work in another project, including an open-source project, requires prior written authorization from the copyright holder. Any permitted reuse must comply with the conditions of that authorization, including attribution requirements where applicable.
+
+The copyright holder may grant additional permissions or release selected components under separate licenses at their discretion.
+
+5. Your Content
+
+This agreement does not claim ownership of presentations, documents, or other content you create with the software. You retain all rights to your own work.
+
+6. Termination
+
+This license terminates automatically if you materially violate its terms, subject to any notice, cure, or other requirements imposed by applicable law. Upon termination, you must stop using the software and delete copies in your possession to the extent legally required.
+
+7. No Warranty
+
+To the maximum extent permitted by applicable law, the software is provided "AS IS", without warranties of any kind, express or implied. The copyright holder is not liable for damages arising from the use of the software, except where such exclusions or limitations are prohibited by applicable law.
+
+8. Changes and Additional Permissions
+
+The copyright holder may update this license for future releases and may grant individual or general exceptions in writing. A separate written authorization may permit specific uses, redistribution, modification, or reuse without changing the permissions granted to other users.
+
+9. Acceptance
+
+By selecting "I Agree" during setup or first launch, you acknowledge that you have read and accepted this agreement. If you do not agree, do not install or use the software.
+
+10. General
+
+This agreement is subject to applicable law. If any provision is held unenforceable, the remaining provisions stay in effect. Nothing in this agreement limits rights that cannot be waived under applicable law.
+
+End of License Agreement

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laurevine Rose</title>
+  <link rel="icon" type="image/svg+xml" href="Assets/favicon.svg">
+  <!-- Spline Sans & Outfit (Google Fonts). The UI falls back to system sans-serif if this is unavailable. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="css/styles.css?v=4">
+  <link rel="stylesheet" href="css/components.css?v=7">
+  <link rel="stylesheet" href="css/slide.css?v=4">
+</head>
+<body>
+<div id="app" class="app" data-view="normal">
+
+  <!-- A. Title bar -->
+  <header id="titlebar" class="titlebar">
+    <div class="titlebar__left">
+      <span class="app-mark" aria-hidden="true"><img src="Assets/favicon.svg" width="32" height="32" alt="Laurevine Rose"></span>
+      <div class="qat" role="toolbar" aria-label="Quick access">
+        <button type="button" class="tbtn" data-command="file.save" data-tip="Save" data-shortcut="Ctrl+S" aria-label="Save"><i data-lucide="save" class="ic"></i></button>
+        <button type="button" class="tbtn" id="qatUndo" data-command="app.undo" data-tip="Undo" data-shortcut="Ctrl+Z" aria-label="Undo"><i data-lucide="undo-2" class="ic"></i></button>
+        <button type="button" class="tbtn" id="qatRedo" data-command="app.redo" data-tip="Redo" data-shortcut="Ctrl+Y" aria-label="Redo"><i data-lucide="redo-2" class="ic"></i></button>
+      </div>
+    </div>
+    <div class="titlebar__center">
+      <button type="button" class="doc-title" id="docTitle" data-tip="Rename presentation" aria-label="Presentation name"><span id="docTitleText">Untitled Presentation</span></button>
+      <span class="save-state" id="saveState" data-state="new" role="status"><span class="dot" aria-hidden="true"></span><span id="saveStateText">Not saved yet</span></span>
+    </div>
+    <div class="titlebar__search">
+      <div class="search">
+        <i data-lucide="search" class="ic"></i>
+        <input id="cmdSearch" type="search" placeholder="Search commands" aria-label="Search commands" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="cmdResults" aria-autocomplete="list">
+        <kbd aria-hidden="true">Ctrl K</kbd>
+        <div id="cmdResults" class="search-results" role="listbox" hidden></div>
+      </div>
+    </div>
+    <div class="titlebar__right">
+      <button type="button" class="tbtn" data-command="app.shortcuts" data-tip="Keyboard shortcuts" aria-label="Keyboard shortcuts"><i data-lucide="keyboard" class="ic"></i></button>
+      <button type="button" class="tbtn" data-command="file.prefs" data-tip="Preferences" aria-label="Preferences"><i data-lucide="settings" class="ic"></i></button>
+      <button type="button" class="tbtn" data-command="app.help" data-tip="About" aria-label="About"><i data-lucide="circle-help" class="ic"></i></button>
+      <div class="win-controls" id="winControls" hidden aria-label="Window controls">
+        <span class="win-controls__sep" aria-hidden="true"></span>
+        <button type="button" class="tbtn win-ctrl win-ctrl--min" id="winMin" title="Minimize" aria-label="Minimize"><i data-lucide="minus" class="ic"></i></button>
+        <button type="button" class="tbtn win-ctrl win-ctrl--max" id="winMax" title="Maximize" aria-label="Maximize"><i data-lucide="square" class="ic"></i></button>
+        <button type="button" class="tbtn win-ctrl win-ctrl--close" id="winClose" title="Close" aria-label="Close"><i data-lucide="x" class="ic"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- B. Tab row -->
+  <nav id="tabrow" class="tabrow" aria-label="Ribbon">
+    <div id="tablist" class="tablist" role="tablist" aria-label="Ribbon tabs"></div>
+    <button type="button" id="ribbonToggle" class="tbtn tabrow__toggle" data-tip="Collapse the ribbon" data-shortcut="Ctrl+F1" aria-label="Collapse the ribbon" aria-pressed="false"><i data-lucide="chevron-up" class="ic"></i></button>
+  </nav>
+
+  <!-- C. Ribbon -->
+  <section id="ribbon" class="ribbon" role="tabpanel" aria-label="Ribbon commands">
+    <div id="ribbonBody" class="ribbon__body"></div>
+  </section>
+
+  <!-- E–G. Main area -->
+  <main id="main" class="main">
+    <aside id="slidepane" class="slidepane" aria-label="Slide navigation">
+      <div class="slidepane__head">
+        <span class="slidepane__title">Slides</span><span class="slidepane__count" id="paneCount"></span>
+        <span class="sp"></span>
+        <button type="button" class="tbtn tbtn--sm" id="paneMore" data-tip="Slide actions" aria-label="Slide actions" aria-haspopup="menu"><i data-lucide="ellipsis" class="ic"></i></button>
+      </div>
+      <div id="slideList" class="slidepane__list" role="listbox" aria-label="Slides">
+        <button type="button" class="thumb-add" id="paneNew" aria-label="New slide"><i data-lucide="plus" class="ic"></i><span>New slide</span></button>
+      </div>
+    </aside>
+    <div id="paneResizer" class="resizer resizer--v" role="separator" aria-orientation="vertical" aria-label="Resize slide pane" tabindex="0"></div>
+
+    <section id="workspace" class="workspace" aria-label="Editing area">
+      <div id="wsMain" class="ws-main">
+        <div id="rulerH" class="ruler ruler--h" hidden aria-hidden="true"></div>
+        <div id="rulerV" class="ruler ruler--v" hidden aria-hidden="true"></div>
+        <div id="wsScroll" class="ws-scroll" tabindex="-1" aria-label="Slide canvas">
+          <div id="stage" class="stage">
+            <div id="slideFrame" class="slide-frame slide-frame--main">
+              <div id="slideOverlay" class="slide-overlay">
+                <div id="guideLayer" class="guide-layer" hidden><i class="guide guide--v"></i><i class="guide guide--h"></i></div>
+                <div id="selLayer" class="sel-layer"></div>
+                <div id="findHighlightLayer" class="find-highlight-layer" style="position:absolute;inset:0;pointer-events:none;z-index:1;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="sorter" class="sorter" role="listbox" aria-label="Slide sorter" hidden></div>
+      </div>
+      <div id="notesResizer" class="resizer resizer--h" role="separator" aria-orientation="horizontal" aria-label="Resize notes" tabindex="0"></div>
+      <div id="notes" class="notes">
+        <label for="notesText" class="notes__label">Notes</label>
+        <textarea id="notesText" class="notes__text" placeholder="Click to add notes" aria-label="Speaker notes"></textarea>
+      </div>
+
+      <!-- Find & Replace panel -->
+      <div id="findPanel" class="find-panel" hidden role="region" aria-label="Find and replace">
+        <input id="findInput" class="input find-panel__input" type="search" placeholder="Find" aria-label="Find">
+        <input id="findReplaceInput" class="input find-panel__input" type="text" placeholder="Replace" aria-label="Replace">
+        <div class="find-panel__nav" role="group" aria-label="Find navigation">
+          <button type="button" class="sbtn" id="findFirst" data-tip="First match" aria-label="First match"><i data-lucide="chevrons-left" class="ic"></i></button>
+          <button type="button" class="sbtn" id="findPrev" data-tip="Previous match (Shift+Enter)" aria-label="Previous match"><i data-lucide="chevron-left" class="ic"></i></button>
+          <button type="button" class="sbtn" id="findNext" data-tip="Next match (Enter)" aria-label="Next match"><i data-lucide="chevron-right" class="ic"></i></button>
+          <button type="button" class="sbtn" id="findLast" data-tip="Last match" aria-label="Last match"><i data-lucide="chevrons-right" class="ic"></i></button>
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" id="findReplaceBtn">Replace</button>
+        <button type="button" class="btn btn--ghost btn--sm" id="findReplaceAllBtn">Replace All</button>
+        <label class="find-panel__check"><input type="checkbox" id="findCase"><span>Match case</span></label>
+        <span id="findCount" class="find-panel__count" aria-live="polite">0 of 0</span>
+        <span class="sp"></span>
+        <button type="button" class="sbtn" id="findClose" data-tip="Close (Esc)" aria-label="Close"><i data-lucide="x" class="ic"></i></button>
+      </div>
+    </section>
+  </main>
+
+  <!-- H. Status bar -->
+  <footer id="statusbar" class="statusbar">
+    <div class="status__left">
+      <span id="statusSlide" class="status-text" aria-live="polite">Slide 1 of 1</span>
+      <button type="button" class="sbtn sbtn--text" id="btnNotes" data-command="view.notes" data-toggle="1" data-tip="Notes" data-tip-pos="top" aria-label="Notes" aria-pressed="false"><i data-lucide="sticky-note" class="ic"></i><span class="sbtn__label">Notes</span></button>
+      <button type="button" class="sbtn sbtn--text" id="btnComments" data-command="view.comments" data-tip="Comments" data-tip-pos="top" aria-label="Comments" aria-haspopup="dialog"><i data-lucide="message-square" class="ic"></i><span class="sbtn__label">Comments</span><span class="badge" id="commentBadge" hidden>0</span></button>
+    </div>
+    <div class="status__mid"><span id="statusSel" class="status-text status-text--muted"></span></div>
+    <div class="status__right">
+      <span class="status-text status-text--muted status-backend" data-tip="Python, LaTeX and export services are not connected yet" data-tip-pos="top"><span class="dot dot--off" aria-hidden="true"></span>Backend: demo</span>
+      <div class="viewbtns" role="group" aria-label="View">
+        <button type="button" class="sbtn" data-command="view.mode" data-args='{"mode":"normal"}' data-toggle="1" data-tip="Normal view" data-tip-pos="top" aria-label="Normal view" aria-pressed="true"><i data-lucide="panel-left" class="ic"></i></button>
+        <button type="button" class="sbtn" data-command="view.mode" data-args='{"mode":"sorter"}' data-toggle="1" data-tip="Slide Sorter" data-tip-pos="top" aria-label="Slide Sorter" aria-pressed="false"><i data-lucide="layout-grid" class="ic"></i></button>
+        <button type="button" class="sbtn" data-command="present.start" data-args='{"from":"current"}' data-tip="Slide Show from current slide" data-shortcut="Shift+F5" data-tip-pos="top" aria-label="Slide Show from current slide"><i data-lucide="presentation" class="ic"></i></button>
+      </div>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button type="button" class="sbtn" data-command="view.zoomOut" data-tip="Zoom out" data-tip-pos="top" aria-label="Zoom out"><i data-lucide="minus" class="ic"></i></button>
+        <input id="zoomRange" class="zoom__range" type="range" min="10" max="400" step="1" value="100" aria-label="Zoom">
+        <button type="button" class="sbtn" data-command="view.zoomIn" data-tip="Zoom in" data-tip-pos="top" aria-label="Zoom in"><i data-lucide="plus" class="ic"></i></button>
+        <span id="zoomPct" class="zoom__pct" aria-live="off">100%</span>
+        <button type="button" class="sbtn" data-command="view.fit" data-toggle="1" data-tip="Fit slide to window" data-tip-pos="top" aria-label="Fit slide to window"><i data-lucide="scan" class="ic"></i></button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- File backstage -->
+  <div id="backstage" class="backstage" hidden role="dialog" aria-label="File"></div>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<input type="file" id="filePicture" accept="image/*" hidden>
+<input type="file" id="fileOpen" accept=".json,application/json" hidden>
+<noscript><p style="padding:24px">This editor needs JavaScript.</p></noscript>
+
+<!-- Lucide icons from the CDN (pinned). If it is blocked or offline, icons-fallback.js draws the same icons locally. -->
+<script>window.__lucideState = 'pending';</script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" async onload="window.__lucideState='loaded'" onerror="window.__lucideState='failed'"></script>
+
+<script src="js/icons-fallback.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/templates/builder.js"></script>
+<script src="js/templates/clinical-blue.js"></script>
+<script src="js/templates/editorial-review.js"></script>
+<script src="js/templates/field-biology.js"></script>
+<script src="js/templates/molecular-translational.js"></script>
+<script src="js/templates/hematology-oncology.js"></script>
+<script src="js/templates/data-methods.js"></script>
+<script src="js/templates/population-health.js"></script>
+<script src="js/templates/computational-biology.js"></script>
+<script src="js/templates/dark-auditorium.js"></script>
+<script src="js/templates/swiss-minimal.js"></script>
+<script src="js/templates/index.js"></script>
+<script src="js/typography.js"></script>
+<script src="js/palettes.js"></script>
+<script src="js/symbols.js"></script>
+<script src="js/state.js"></script>
+<script src="js/headerfooter.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/backend.js"></script>
+<script src="js/figures/store.js"></script>
+<script src="js/plots.js"></script>
+<script src="js/shapes.js"></script>
+<script src="js/tables.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/seed.js"></script>
+<script src="js/layouts.js"></script>
+<script src="js/layoutpicker.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/ribbon-config.js"></script>
+<script src="js/commands.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/symbollib.js"></script>
+<script src="js/slidepane.js"></script>
+<script src="js/ribbon.js"></script>
+<script src="js/figures/a11y.js"></script>
+<script src="js/figures/controls.js"></script>
+<script src="js/figures/plotpanels.js"></script>
+<script src="js/figures/editor.js"></script>
+<script src="js/figures/spreadsheet.js"></script>
+<script src="js/figures/datasource.js"></script>
+<script src="js/figures/exportpanel.js"></script>
+<script src="js/figures/codeeditor.js"></script>
+<script src="js/figures/pysource.js"></script>
+<script src="js/figures/pyfigure.js"></script>
+<script src="js/figures/latex.js"></script>
+<script src="js/figures/composer.js"></script>
+<script src="js/dialogs.js"></script>
+<script src="js/checks_core.js"></script>
+<script src="js/checks.js"></script>
+<script src="js/present.js"></script>
+<script src="js/backstage_meta.js"></script>
+<script src="js/desktop.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

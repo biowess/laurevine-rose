@@ -1,0 +1,176 @@
+/* slide.css — slide surface and objects (shared by canvas, thumbnails, sorter and Present),
+   selection overlay, slide sorter items and Present mode. */
+.slide-frame { position: relative; flex: none; background: #fff; box-shadow: 0 0 0 1px rgba(41, 42, 45, .14), 0 1px 4px rgba(41, 42, 45, .16); }
+.slide-frame--main { margin: 0; }
+.slide { position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; user-select: none; -webkit-user-select: none; }
+.decor { position: absolute; pointer-events: none; }
+.hf { position: absolute; display: flex; flex-direction: column; box-sizing: border-box; padding: 0 10px; overflow: hidden; }
+.slide--edit .hf { cursor: default; }
+.slide--edit .hf:hover:not(.is-editing) { outline: 1px dashed rgba(112, 45, 59, .35); }
+.hf.is-editing { cursor: text; outline: none; overflow: visible; }
+.hf .obj__text.is-empty::before { opacity: 0; }
+.slide--edit .hf:hover:not(.is-editing) .obj__text.is-empty::before, .hf.is-editing .obj__text.is-empty::before { opacity: 1; }
+.slide__num { position: absolute; right: 28px; bottom: 16px; font-size: 12pt; pointer-events: none; }
+.slide__overlay-grid { position: absolute; inset: 0; pointer-events: none; display: none; }
+.slide.show-grid .slide__overlay-grid { display: block; background-image: linear-gradient(to right, rgba(128, 128, 128, .28) 1px, transparent 1px), linear-gradient(to bottom, rgba(128, 128, 128, .28) 1px, transparent 1px); background-size: 24px 24px; }
+
+.obj { position: absolute; display: flex; flex-direction: column; }
+.obj--text { padding: 6px 10px; }
+.obj--shape { padding: 6px 10px; }
+.obj--image, .obj--plot, .obj--figure, .obj--table { display: block; }
+.slide--edit .obj { cursor: default; }
+.slide--edit .obj:hover:not(.is-editing) { outline: 1px solid rgba(112, 45, 59, .35); outline-offset: 0; }
+.slide--edit .obj--text:hover:not(.is-editing), .slide--edit .obj--shape:hover:not(.is-editing) { cursor: move; }
+.slide--edit .obj--plot:hover, .slide--edit .obj--figure:hover, .slide--edit .obj--image:hover, .slide--edit .obj--table:hover { cursor: move; }
+.obj.is-editing { cursor: text; outline: none; }
+.obj__text { position: relative; flex: none; min-height: 1em; outline: 0; width: 100%; word-wrap: break-word; overflow-wrap: anywhere; z-index: 1; }
+.obj__text p { margin: 0 0 var(--para-gap, 0); min-height: 1em; }
+.obj__text[data-list="bullet"] p, .obj__text[data-list="number"] p { display: list-item; margin-left: 1.15em; padding-left: .2em; }
+.obj__text[data-list="bullet"] p { list-style: disc; } .obj__text[data-list="number"] p { list-style: decimal; }
+.obj__text[data-list="bullet"] p::marker, .obj__text[data-list="number"] p::marker, .obj__text li::marker { font-family: var(--mk-font, inherit); font-size: var(--mk-size, inherit); color: var(--mk-color, inherit); }
+.obj__text[data-list]:not([data-list=""]) p { margin-bottom: max(var(--para-gap, 0), .3em); }
+.obj__text ul, .obj__text ol { margin: 0; padding-left: 1.3em; }
+.obj__text ul { list-style: disc; } .obj__text ol { list-style: decimal; }
+.obj__text li { margin-bottom: max(var(--para-gap, 0), .3em); min-height: 1em; }
+.obj__text[style*="justify"] p, .obj__text p[style*="justify"], .obj__text p[align="justify"] { text-align: justify; text-justify: inter-word; }
+.obj__text a { color: inherit; text-decoration: underline; }
+.obj__text sub, .obj__text sup, td sub, td sup, th sub, th sup { font-size: 70%; line-height: 0; position: relative; vertical-align: baseline; }
+.obj__text sub, td sub, th sub { bottom: -0.25em; }
+.obj__text sup, td sup, th sup { top: -0.45em; }
+.slide--edit .obj:not(.is-editing) .obj__text a { cursor: pointer; }
+.slide--present a { cursor: pointer; }
+.slide--thumb { pointer-events: none; }
+.is-editing .obj__text { cursor: text; user-select: text; -webkit-user-select: text; }
+.obj__text.is-empty::before { content: attr(data-prompt); position: absolute; left: 0; top: 0; color: #9C979F; pointer-events: none; font-weight: 400; font-style: normal; white-space: nowrap; }
+.obj__text[data-list="bullet"].is-empty::before, .obj__text[data-list="number"].is-empty::before { left: 1.3em; }
+.slide--thumb .obj__text.is-empty::before, .slide--present .obj__text.is-empty::before, .slide--measure .obj__text.is-empty::before { content: none; }
+.shape-gfx { position: absolute; inset: 0; pointer-events: none; }
+.shape-gfx svg { display: block; overflow: visible; }
+.obj--shape { justify-content: center; }
+.obj__plot { position: absolute; inset: 0; }
+.obj__plot > img { display: block; width: 100%; height: 100%; object-fit: contain; -webkit-user-drag: none; }
+.obj--image img { width: 100%; height: 100%; object-fit: contain; display: block; -webkit-user-drag: none; }
+.img-ph { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #F4F2EF; border: 1px solid #D9D5D0; color: #8A858D; font-size: 14px; text-align: center; padding: 10px; }
+.img-ph svg { width: 40px; height: 40px; } .img-ph strong { font-weight: 500; color: #5E5B62; } .img-ph span { font-size: 12px; }
+.obj-table { border-collapse: collapse; table-layout: fixed; font-family: inherit; }
+.obj-table th, .obj-table td { padding: 4px 10px; overflow-wrap: anywhere; outline: 0; box-sizing: border-box; }
+.obj-table [contenteditable="true"] { box-shadow: inset 0 0 0 2px var(--burgundy); background: #fff !important; color: #111; user-select: text; -webkit-user-select: text; }
+.slide--edit .obj--table td, .slide--edit .obj--table th { cursor: default; }
+.slide-frame.painting { cursor: copy !important; }
+.slide-frame.painting .obj { cursor: copy !important; }
+.slide-frame.painting .obj--text .obj__text,
+.slide-frame.painting .obj--shape .obj__text { cursor: text !important; }
+
+/* selection overlay (not scaled) */
+.slide-overlay { position: absolute; inset: 0; pointer-events: none; }
+.sel-layer { position: absolute; inset: 0; }
+.sel { position: absolute; border: 1.5px solid var(--burgundy); pointer-events: none; box-sizing: border-box; }
+.sel--edit { border-style: dashed; border-color: var(--rose); }
+.sel--cell { position: absolute; border: 2px solid var(--burgundy); background: rgba(112,45,59,0.14); pointer-events: none; box-sizing: border-box; z-index: 2; }
+.sel--range { background: rgba(112,45,59,0.18); box-shadow: 0 0 0 1px #fff inset; }
+.tbl-handle { position: absolute; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; background: #fff; color: var(--burgundy); border: 1.5px solid var(--burgundy); border-radius: 3px; cursor: crosshair; pointer-events: auto; touch-action: none; box-sizing: border-box; z-index: 3; }
+.tbl-handle:hover { background: var(--sel-bg); }
+.sel--multi { border-style: dashed; border-width: 1px; }
+.handle { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; background: #fff; border: 1.5px solid var(--burgundy); border-radius: 2px; pointer-events: auto; box-sizing: border-box; }
+.handle--nw { left: 0; top: 0; cursor: nwse-resize; } .handle--n { left: 50%; top: 0; cursor: ns-resize; } .handle--ne { left: 100%; top: 0; cursor: nesw-resize; }
+.handle--e { left: 100%; top: 50%; cursor: ew-resize; } .handle--se { left: 100%; top: 100%; cursor: nwse-resize; } .handle--s { left: 50%; top: 100%; cursor: ns-resize; }
+.handle--sw { left: 0; top: 100%; cursor: nesw-resize; } .handle--w { left: 0; top: 50%; cursor: ew-resize; }
+.handle:hover { background: var(--sel-bg); }
+/* Yellow diamond adjust handle for shape geometry (arrow head size, callout tail, apexes) */
+.handle--adj {
+  background: #FFD000;
+  border: 2px solid #855500;
+  border-radius: 0;
+  transform: rotate(45deg);
+  cursor: grab;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  z-index: 20;
+  box-shadow: 0 0 0 1.5px #FFFFFF, 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
+}
+/* Generous hit area around the diamond so it is effortlessly easy to click & drag */
+.handle--adj::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  pointer-events: auto;
+  border-radius: 50%;
+}
+.handle--adj:hover {
+  background: #FFE033;
+  transform: rotate(45deg) scale(1.18);
+  box-shadow: 0 0 0 2px #FFFFFF, 0 3px 8px rgba(0,0,0,0.5);
+}
+.handle--adj.is-dragging, .handle--adj:active {
+  background: #FFF275;
+  cursor: grabbing !important;
+  transform: rotate(45deg) scale(1.25);
+  box-shadow: 0 0 0 2px #FFFFFF, 0 4px 12px rgba(255, 208, 0, 0.7);
+}
+.marquee { position: absolute; border: 1px solid var(--burgundy); background: rgba(112, 45, 59, .08); pointer-events: none; }
+.marquee--draw { border: 1.5px dashed #2563eb; background: rgba(37, 99, 235, .07); }
+/* Real-time shape drawing ghost */
+.obj--ghost { position: absolute; pointer-events: none !important; opacity: 0.72; z-index: 99; filter: drop-shadow(0 2px 8px rgba(37, 99, 235, 0.25)); }
+/* Crosshair cursor during draw-to-create mode */
+.slide-frame.drawing, .slide-frame.drawing * { cursor: crosshair !important; }
+.smart { position: absolute; pointer-events: none; opacity: .9; }
+.smart--v { top: 0; bottom: 0; border-left: 1px dashed #A65C68; filter: drop-shadow(0 0 1px rgba(255, 255, 255, .85)) drop-shadow(0 0 1px rgba(0, 0, 0, .4)); }
+.smart--h { left: 0; right: 0; border-top: 1px dashed #A65C68; filter: drop-shadow(0 0 1px rgba(255, 255, 255, .85)) drop-shadow(0 0 1px rgba(0, 0, 0, .4)); }
+.guide-layer { position: absolute; inset: 0; pointer-events: none; }
+.guide { position: absolute; border: 0 dashed rgba(112, 45, 59, .55); }
+.guide--v { left: 50%; top: 0; bottom: 0; border-left-width: 1px; } .guide--h { top: 50%; left: 0; right: 0; border-top-width: 1px; }
+
+/* sorter items */
+.sorter-item { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 6px; border: 1px solid transparent; border-radius: 4px; outline: 0; transition: background-color var(--t-fast), border-color var(--t-fast); }
+.sorter-item:hover { background: rgba(255, 255, 255, .6); }
+.sorter-item .thumb { line-height: 0; width: var(--sorter-w, 256px); background: #fff; border: 1px solid var(--border-2); }
+.sorter-item__num { order: 2; text-align: center; font-size: 12px; color: var(--text-2); }
+.sorter-item.is-active { background: #fff; border-color: var(--burgundy); box-shadow: 0 0 0 1px var(--burgundy); }
+.sorter-item.is-active .sorter-item__num { color: var(--burgundy); font-weight: 600; }
+.sorter-item:focus-visible { outline: 2px solid var(--burgundy); outline-offset: 2px; }
+.sorter-item.is-dragging { opacity: .4; }
+.sorter-item.drop-before::before { left: -11px; right: auto; top: 6px; bottom: 6px; width: 3px; height: auto; }
+.sorter-item.drop-after::after { right: -11px; left: auto; top: 6px; bottom: 6px; width: 3px; height: auto; }
+
+/* Present mode */
+.present { position: fixed; inset: 0; z-index: var(--z-present); background: #0E0E10; display: grid; place-items: center; cursor: default; color: #fff; }
+.present__stage { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 28px; padding: 0; }
+.present .slide-frame { box-shadow: none; }
+.present.is-presenter .present__stage { padding: 24px 28px 90px; align-items: flex-start; }
+.present__main { flex: none; } .present.is-presenter .present__main .slide-frame { box-shadow: 0 0 0 1px #3a3a40; }
+.present__side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; max-width: 520px; }
+.present__lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #A9A6AD; }
+.present__side .slide-frame { box-shadow: 0 0 0 1px #3a3a40; }
+.present__notes { background: #1B1B1F; border: 1px solid #34343A; border-radius: 4px; padding: 12px 14px; line-height: 1.5; font-size: 15px; min-height: 120px; color: #E8E6EA; overflow: auto; max-height: 38vh; }
+.present__end { padding: 24px; border: 1px dashed #4a4a52; border-radius: 4px; color: #A9A6AD; }
+.present__timer { display: flex; align-items: center; gap: 8px; font-size: 22px; font-variant-numeric: tabular-nums; color: #E8C7CE; }
+.present__bar { position: absolute; left: 50%; bottom: 20px; transform: translate(-50%, 8px); display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(30, 30, 34, .92); border: 1px solid #3a3a40; border-radius: 6px; opacity: 0; transition: opacity 160ms, transform 160ms; }
+.present.show-ui .present__bar, .present__bar:focus-within { opacity: 1; transform: translate(-50%, 0); }
+.present__btn { width: 32px; height: 30px; display: grid; place-items: center; border: 0; background: transparent; color: #fff; border-radius: 4px; } .present__btn:hover:not(:disabled) { background: rgba(255, 255, 255, .14); } .present__btn:disabled { opacity: .35; } .present__btn[aria-pressed="true"] { background: rgba(166, 92, 104, .55); }
+.present__count { min-width: 56px; text-align: center; font-size: 12.5px; color: #D5D2D8; } .present__sep { width: 1px; height: 18px; background: #44444b; margin: 0 4px; }
+.present__dot { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle, #ff3b3b 0 35%, rgba(255, 59, 59, .35) 36% 100%); pointer-events: none; display: none; }
+.present.is-laser { cursor: none; } .present.is-laser .present__dot { display: block; } .present.is-laser .present__bar, .present.is-laser .present__bar * { cursor: default; }
+
+/* Image adjustment / crop mode */
+/* Cropped image: the parent .obj--image clips the overflow so only the visible region shows */
+.obj--image.is-cropped { overflow: hidden; }
+/* Semi-transparent "shadow" overlaid on the cropped-out areas during active crop editing */
+.crop-shadow { position: absolute; background: rgba(0,0,0,0.55); pointer-events: none; z-index: 10; }
+/* The visible "keep" region during crop — white border rectangle */
+.crop-frame { position: absolute; box-sizing: border-box; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.6); pointer-events: none; z-index: 11; }
+/* Eight crop edge/corner handles */
+.crop-handle { position: absolute; background: #fff; border: 1.5px solid rgba(0,0,0,0.6); z-index: 12; pointer-events: auto; touch-action: none; box-sizing: border-box; }
+.crop-handle--n, .crop-handle--s { width: 32px; height: 8px; margin-left: -16px; cursor: ns-resize; }
+.crop-handle--e, .crop-handle--w { width: 8px; height: 32px; margin-top: -16px; cursor: ew-resize; }
+.crop-handle--nw, .crop-handle--ne, .crop-handle--sw, .crop-handle--se { width: 10px; height: 10px; cursor: nwse-resize; }
+.crop-handle--ne, .crop-handle--sw { cursor: nesw-resize; }
+/* Positions set via inline styles (depends on scale); just a brief reminder: */
+/* n:left50%,top0  s:left50%,top100%  e:left100%,top50%  w:left0,top50% */
+/* nw:left0,top0  ne:left100%,top0  sw:left0,top100%  se:left100%,top100% */
+/* Slide-frame in crop mode: crosshair cursor on blank areas */
+.slide-frame.is-cropping { cursor: default; }
+/* img-tint overlay (rendered inside .obj--image by applyImageAdj) */
+.img-tint { border-radius: inherit; }
+

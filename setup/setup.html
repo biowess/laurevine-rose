@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laurevine Rose Setup</title>
+  <link rel="stylesheet" href="../fonts/fonts.css">
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="ic-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol>
+    <symbol id="ic-fail" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></symbol>
+    <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12h7"/></symbol>
+    <symbol id="ic-wait" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></symbol>
+  </svg>
+  <div class="stage">
+    <div class="drag-strip" aria-hidden="true"></div>
+
+    <div class="winctl" role="group" aria-label="Window controls">
+      <button type="button" class="winctl__btn" id="setupMin" title="Minimize" aria-label="Minimize">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+      </button>
+      <button type="button" class="winctl__btn winctl__btn--close" id="setupClose" title="Close" aria-label="Close">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <main class="pane">
+      <div class="steps" id="setupSteps" aria-live="polite">
+        <section class="step" data-step="welcome" aria-labelledby="welcomeTitle" hidden>
+          <h1 class="step__title" id="welcomeTitle" tabindex="-1">Laurevine Rose</h1>
+          <p class="step__meta">Version <span id="welcomeVersion">1.0.0</span></p>
+          <p class="step__text">A desktop research presentation editor with PowerPoint-grade fidelity.<br>It includes a Scientific Figure Studio for publication-quality visualization.</p>
+        </section>
+
+        <section class="step step--license" data-step="license" aria-labelledby="licenseTitle" hidden>
+          <h1 class="step__title step__title--sm" id="licenseTitle" tabindex="-1">License Agreement</h1>
+          <p class="step__intro">Please read the agreement below, then confirm that you accept it to continue.</p>
+          <pre class="license" id="licenseText" role="region" tabindex="0" aria-label="Software license agreement text. Scroll to read the full agreement."></pre>
+          <label class="check"><input type="checkbox" id="licenseAgree" disabled><span>I have read and accept the license agreement</span></label>
+          <p class="step__msg" id="licenseMsg" hidden></p>
+        </section>
+
+        <section class="step step--components" data-step="components" aria-labelledby="componentsTitle" hidden>
+          <h1 class="step__title step__title--sm" id="componentsTitle" tabindex="-1">Components</h1>
+          <p class="step__intro" id="compIntro">Checking that everything Laurevine Rose needs is ready.</p>
+          <ul class="comp-list" id="compList" aria-busy="true"></ul>
+
+          <!-- Offline PDF export card -->
+          <div class="pdf-card" id="pdfCard" hidden>
+            <div class="pdf-card__header">
+              <h2 class="pdf-card__title" id="pdfCardTitle">Offline PDF export (optional)</h2>
+              <div class="pdf-card__meta" id="pdfCardMeta">
+                <span id="pdfSize"></span>
+                <span class="pdf-card__bullet" aria-hidden="true">&bull;</span>
+                <span id="pdfDomain"></span>
+              </div>
+            </div>
+
+            <p class="pdf-card__note" id="pdfCardNote">Skipping doesn't affect PowerPoint export.</p>
+
+            <div class="pdf-card__available" id="pdfAvailable" hidden>
+              <svg class="comp__ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ok"></use></svg>
+              <div class="pdf-card__avail-text">
+                <span class="pdf-card__avail-status">Already available</span>: Install is skipped.
+                <p class="comp__detail" id="pdfAvailDetail"></p>
+              </div>
+            </div>
+
+            <div class="pdf-card__actions" id="pdfActions">
+              <button type="button" class="btn btn--primary" id="pdfInstallBtn">Install</button>
+              <button type="button" class="btn" id="pdfSkipBtn">Skip</button>
+            </div>
+
+            <div class="pdf-card__progress" id="pdfProgressArea" hidden>
+              <div class="pdf-card__prog-header">
+                <span class="pdf-card__phase" id="pdfPhase" aria-live="polite">Downloading…</span>
+                <span class="pdf-card__stats" id="pdfStats" aria-live="polite">
+                  <span id="pdfMB"></span>
+                  <span class="pdf-card__bullet" id="pdfSpeedBullet" aria-hidden="true">&bull;</span>
+                  <span id="pdfSpeed"></span>
+                </span>
+              </div>
+              <div class="progress-wrap" role="progressbar" id="pdfProgressWrap" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="LibreOffice installation progress">
+                <div class="progress-bar" id="pdfProgressBar" style="width: 0%;"></div>
+              </div>
+              <div class="pdf-card__prog-actions">
+                <button type="button" class="btn btn--sm" id="pdfCancelBtn">Cancel</button>
+              </div>
+            </div>
+
+            <div class="pdf-confirm" id="pdfCancelConfirm" role="alertdialog" aria-modal="true" aria-labelledby="pdfConfirmTitle" hidden>
+              <p class="pdf-confirm__title" id="pdfConfirmTitle">Cancel LibreOffice installation?</p>
+              <p class="pdf-confirm__text">You can install it later or skip it without affecting PowerPoint export.</p>
+              <div class="pdf-confirm__btns">
+                <button type="button" class="btn btn--danger" id="pdfConfirmYes">Yes, cancel</button>
+                <button type="button" class="btn" id="pdfConfirmNo">Resume</button>
+              </div>
+            </div>
+
+            <div class="pdf-card__error" id="pdfErrorArea" role="alert" hidden>
+              <p class="pdf-card__error-text" id="pdfErrorText"></p>
+              <div class="pdf-card__manual" id="pdfManualArea" hidden>
+                <a href="#" class="pdf-card__link" id="pdfManualLink" target="_blank" rel="noopener">Download manually from libreoffice.org</a>
+              </div>
+              <div class="pdf-card__error-btns">
+                <button type="button" class="btn btn--primary" id="pdfRetryBtn">Retry</button>
+                <button type="button" class="btn" id="pdfErrorSkipBtn">Skip</button>
+              </div>
+            </div>
+
+            <div class="pdf-card__done" id="pdfDoneArea" hidden>
+              <svg class="comp__ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ok"></use></svg>
+              <span id="pdfDoneText">Offline PDF export is installed and ready.</span>
+            </div>
+            <div class="pdf-card__skipped" id="pdfSkippedArea" hidden>
+              <span id="pdfSkippedText">Offline PDF export skipped. PowerPoint export remains available.</span>
+              <button type="button" class="btn btn--sm" id="pdfInstallSkippedBtn">Install now</button>
+            </div>
+          </div>
+          <div class="repair" id="compRepair" role="alert" hidden>
+            <p class="repair__title">Repair needed</p>
+            <p class="repair__text">A required component is missing or damaged. Reinstall Laurevine Rose, then choose Re-check.</p>
+            <div class="repair__btns">
+              <button type="button" class="btn" id="compRecheck">Re-check</button>
+              <button type="button" class="btn" id="compExit">Exit</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="step step--ready" data-step="ready" aria-labelledby="readyTitle" hidden>
+          <h1 class="step__title step__title--sm" id="readyTitle" tabindex="-1">Ready to Launch</h1>
+          <p class="step__intro" id="readyIntro">Verifying system readiness and configuration.</p>
+          
+          <div class="ready-summary">
+            <div class="ready-row" id="readyLicenseRow">
+              <svg class="comp__ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ok"></use></svg>
+              <div class="ready-row__body">
+                <div class="ready-row__label">License agreement</div>
+                <div class="ready-row__detail" id="readyLicenseDetail">Accepted</div>
+              </div>
+              <a href="#" class="ready-row__link" id="readyLicenseLink" hidden>Review</a>
+            </div>
+
+            <div class="ready-row" id="readyBackendRow">
+              <svg class="comp__ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ok"></use></svg>
+              <div class="ready-row__body">
+                <div class="ready-row__label">Application engine</div>
+                <div class="ready-row__detail" id="readyBackendDetail">Self-check passed</div>
+              </div>
+              <a href="#" class="ready-row__link" id="readyBackendLink" hidden>View</a>
+            </div>
+
+            <div class="ready-row" id="readyPdfRow">
+              <svg class="comp__ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ok"></use></svg>
+              <div class="ready-row__body">
+                <div class="ready-row__label" id="readyPdfLabel">PDF export: Ready</div>
+                <div class="ready-row__detail" id="readyPdfDetail">Direct presentation PDF export enabled.</div>
+              </div>
+              <a href="#" class="ready-row__link" id="readyPdfLink" hidden>Configure</a>
+            </div>
+
+            <div class="ready-row" id="readyStateRow">
+              <svg class="comp__ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-ok"></use></svg>
+              <div class="ready-row__body">
+                <div class="ready-row__label">Settings &amp; progress storage</div>
+                <div class="ready-row__detail" id="readyStateDetail">Writable</div>
+              </div>
+              <a href="#" class="ready-row__link" id="readyStateLink" hidden>Details</a>
+            </div>
+          </div>
+
+          <div class="repair" id="readyFailure" role="alert" hidden>
+            <p class="repair__title">Validation failed</p>
+            <p class="repair__text" id="readyFailureText">One or more validation checks failed. Please resolve the issue before launching.</p>
+            <div class="repair__btns">
+              <button type="button" class="btn btn--sm" id="readyRetryBtn">Re-validate</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="bar">
+        <button type="button" class="btn" id="setupBack" disabled>Back</button>
+        <div class="bar__right">
+          <button type="button" class="btn" id="setupDecline" hidden>Decline</button>
+          <button type="button" class="btn btn--primary" id="setupNext">Continue</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+  <script src="setup.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{
+  "generated": "2026-10-20T00:00:00Z",
+  "source": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/",
+  "license": "MPL-2.0",
+  "license_url": "https://www.libreoffice.org/download/license/",
+  "note": "Download and extraction are UNTESTED. Metadata is verified against official documentfoundation.org files only. The installer must refuse entries with verified=false.",
+
+  "win-x64": {
+    "version": "26.2.6",
+    "fetch_date": "2026-10-20",
+    "url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/win/x86_64/LibreOffice_26.2.6_Win_x86-64.msi",
+    "size_bytes": 373252096,
+    "sha256": "f9877032fd908beb9c0ddf06df4af5c2e85f419c42e14876c4cce5aae5fb2660",
+    "archive_type": "msi",
+    "extract": {
+      "mode": "no-admin",
+      "method": "Administrative install: msiexec /a <msi> /qb TARGETDIR=<dest> (unpacks files without system installation)[reference:1]"
+    },
+    "soffice_rel_path": "program/soffice.exe",
+    "verified": true
+  },
+
+  "win-arm64": {
+    "version": "26.2.6",
+    "fetch_date": "2026-10-20",
+    "url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/win/aarch64/LibreOffice_26.2.6_Win_aarch64.msi",
+    "size_bytes": 359571456,
+    "sha256": "13be874da62665756b6d7c8a6afbc50e6465382a885ad90acf4dbe806d51db24",
+    "archive_type": "msi",
+    "extract": {
+      "mode": "no-admin",
+      "method": "Administrative install: msiexec /a <msi> /qb TARGETDIR=<dest> (unpacks files without system installation)[reference:2]"
+    },
+    "soffice_rel_path": "program/soffice.exe",
+    "verified": true
+  },
+
+  "mac-arm64": {
+    "version": "26.2.6",
+    "fetch_date": "2026-10-20",
+    "url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/mac/aarch64/LibreOffice_26.2.6_MacOS_aarch64.dmg",
+    "size_bytes": 297798926,
+    "sha256": "94bb3248df074c225490a8a6d1d9dc87c7d6783dbb7a8e9f0d0c3d94348552af",
+    "archive_type": "dmg",
+    "extract": {
+      "mode": "no-admin",
+      "method": "hdiutil attach <dmg> -nobrowse -readonly; cp -R /Volumes/LibreOffice/LibreOffice.app <dest>; hdiutil detach <mountpoint>"
+    },
+    "soffice_rel_path": "LibreOffice.app/Contents/MacOS/soffice",
+    "verified": true
+  },
+
+  "mac-x64": {
+    "version": "26.2.6",
+    "fetch_date": "2026-10-20",
+    "url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/mac/x86_64/LibreOffice_26.2.6_MacOS_x86-64.dmg",
+    "size_bytes": 308308875,
+    "sha256": "135b8a95b8133396d54bf8e726dbc0066145efa0d785963fc3d4592acbfcfe5b",
+    "archive_type": "dmg",
+    "extract": {
+      "mode": "no-admin",
+      "method": "hdiutil attach <dmg> -nobrowse -readonly; cp -R /Volumes/LibreOffice/LibreOffice.app <dest>; hdiutil detach <mountpoint>"
+    },
+    "soffice_rel_path": "LibreOffice.app/Contents/MacOS/soffice",
+    "verified": true
+  },
+
+  "linux-x64": {
+    "version": "26.2.6",
+    "fetch_date": "2026-10-20",
+    "url": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/deb/x86_64/LibreOffice_26.2.6_Linux_x86-64_deb.tar.gz",
+    "size_bytes": 217285735,
+    "sha256": "fd0e8f8f2408dd2e5b90286e60f3f97cf566ba441cd48cfc5bcc68067303e0bc",
+    "archive_type": "tar.gz",
+    "extract": {
+      "mode": "no-admin",
+      "method": "tar -xzf <tar.gz>; for deb in DEBS/*.deb; do dpkg-deb -x \"$deb\" <dest>; done (dpkg-deb -x does not require root)"
+    },
+    "soffice_rel_path": "opt/libreoffice26.2/program/soffice",
+    "verified": true
+  }
+}

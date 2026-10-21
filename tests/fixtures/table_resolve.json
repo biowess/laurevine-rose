@@ -1,0 +1,483 @@
+{
+  "tableObject": {
+    "id": "t_parity",
+    "type": "table",
+    "x": 60.0,
+    "y": 120.0,
+    "w": 600.0,
+    "h": 200.0,
+    "headerRow": true,
+    "banded": true,
+    "fontSize": 14.0,
+    "font": "Georgia",
+    "color": "text",
+    "bold": false,
+    "align": "left",
+    "cells": [
+      [
+        "H1",
+        "H2",
+        "H3"
+      ],
+      [
+        "R1C1",
+        "R1C2",
+        "R1C3"
+      ],
+      [
+        "R2C1",
+        "R2C2",
+        "R2C3"
+      ],
+      [
+        "R3C1",
+        "R3C2",
+        "R3C3"
+      ]
+    ],
+    "colW": [
+      150.0,
+      250.0,
+      200.0
+    ],
+    "rowH": [
+      50.0,
+      50.0,
+      50.0,
+      50.0
+    ],
+    "cellFmt": {
+      "0,1": {
+        "bold": false,
+        "align": "center",
+        "color": "#00FF00"
+      },
+      "1,0": {
+        "fill": "accent",
+        "bold": true,
+        "italic": true,
+        "fontSize": 18.0,
+        "vAlign": "top"
+      },
+      "1,1": {
+        "fill": null,
+        "underline": true,
+        "strike": true
+      },
+      "2,1": {
+        "fill": "#123456",
+        "vAlign": "bottom",
+        "align": "right"
+      }
+    },
+    "tableBorder": {
+      "width": 2.0,
+      "color": "accent"
+    }
+  },
+  "geometry": {
+    "rows": 4,
+    "cols": 3,
+    "colW": [
+      150.0,
+      250.0,
+      200.0
+    ],
+    "rowH": [
+      50.0,
+      50.0,
+      50.0,
+      50.0
+    ]
+  },
+  "themes": {
+    "journal": {
+      "slideBg": "#FFFFFF",
+      "dark": false,
+      "tints": {
+        "bandTint": "#F8F5F5",
+        "lineColor": "#DBDBDB"
+      },
+      "border": {
+        "width": 2.0,
+        "color": "#702D3B"
+      },
+      "resolvedCells": {
+        "0,0": {
+          "fill": "#702D3B",
+          "color": "#FFFFFF",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "0,1": {
+          "fill": "#702D3B",
+          "color": "#00FF00",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "center",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "0,2": {
+          "fill": "#702D3B",
+          "color": "#FFFFFF",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "1,0": {
+          "fill": "#702D3B",
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 18.0,
+          "bold": true,
+          "italic": true,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "top",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "1,1": {
+          "fill": null,
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": true,
+          "strike": true,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "1,2": {
+          "fill": null,
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "2,0": {
+          "fill": "#F8F5F5",
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "2,1": {
+          "fill": "#123456",
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "right",
+          "vAlign": "bottom",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "2,2": {
+          "fill": "#F8F5F5",
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "3,0": {
+          "fill": null,
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "3,1": {
+          "fill": null,
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "3,2": {
+          "fill": null,
+          "color": "#292A2D",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        }
+      }
+    },
+    "midnight": {
+      "slideBg": "#1E2128",
+      "dark": true,
+      "tints": {
+        "bandTint": "#292C33",
+        "lineColor": "#47494F"
+      },
+      "border": {
+        "width": 2.0,
+        "color": "#D58A99"
+      },
+      "resolvedCells": {
+        "0,0": {
+          "fill": "#D58A99",
+          "color": "#FFFFFF",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "0,1": {
+          "fill": "#D58A99",
+          "color": "#00FF00",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "center",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "0,2": {
+          "fill": "#D58A99",
+          "color": "#FFFFFF",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "1,0": {
+          "fill": "#D58A99",
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 18.0,
+          "bold": true,
+          "italic": true,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "top",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "1,1": {
+          "fill": null,
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": true,
+          "strike": true,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "1,2": {
+          "fill": null,
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "2,0": {
+          "fill": "#292C33",
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "2,1": {
+          "fill": "#123456",
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "right",
+          "vAlign": "bottom",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "2,2": {
+          "fill": "#292C33",
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "3,0": {
+          "fill": null,
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "3,1": {
+          "fill": null,
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        },
+        "3,2": {
+          "fill": null,
+          "color": "#E7E8EB",
+          "font": "Georgia",
+          "fontSize": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "strike": false,
+          "align": "left",
+          "vAlign": "middle",
+          "subscript": false,
+          "superscript": false,
+          "baseline": 0
+        }
+      }
+    }
+  }
+}

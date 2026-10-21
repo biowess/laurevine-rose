@@ -1,0 +1,56 @@
+LAUREVINE ROSE — THIRD-PARTY SOFTWARE NOTICES AND LICENSES
+
+This document contains licensing notices and acknowledgements for third-party
+software components bundled with or used by Laurevine Rose.
+
+================================================================================
+1. Electron
+   License: MIT
+   Copyright (c) Electron contributors
+   Copyright (c) 2013-2020 GitHub Inc.
+
+2. Python Runtime & Standard Library
+   License: Python Software Foundation License (PSF)
+   Copyright (c) 2001-2026 Python Software Foundation. All rights reserved.
+
+3. FastAPI
+   License: MIT
+   Copyright (c) 2018 Sebastián Ramírez
+
+4. Uvicorn
+   License: BSD-3-Clause
+   Copyright (c) 2017-present, Encode OSS Ltd. All rights reserved.
+
+5. python-pptx
+   License: MIT
+   Copyright (c) 2013 Steve Canny
+
+6. Pydantic
+   License: MIT
+   Copyright (c) 2019 Samuel Colvin
+
+7. Matplotlib
+   License: PSF / BSD-compatible
+   Copyright (c) 2002-2012 John D. Hunter; (c) 2012-2026 Matplotlib Development Team
+
+8. NumPy
+   License: BSD-3-Clause
+   Copyright (c) 2005-2026, NumPy Developers. All rights reserved.
+
+9. Pandas
+   License: BSD-3-Clause
+   Copyright (c) 2008-2011, AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team
+
+10. SciPy
+    License: BSD-3-Clause
+    Copyright (c) 2001-2002 Enthought, Inc. 2003-2026, SciPy Developers.
+
+11. PyMuPDF (fitz)
+    License: GNU AGPL v3.0 / Commercial
+    Copyright (c) 2026 Artifex Software, Inc.
+
+12. python-multipart
+    License: Apache-2.0
+    Copyright (c) 2015 Andrew Dunham
+
+================================================================================
