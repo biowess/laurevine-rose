@@ -268,6 +268,25 @@ async def latex_render(request: Request):
     return await _latex_job(body, latex_core.render_final, pdf, source, mode, engine, dpi, w_in, background)
 
 
+@router.post("/latex/equation")
+async def latex_equation(request: Request):
+    """Render a LaTeX equation into high-resolution transparent PNG."""
+    body = await _latex_body(request)
+    if not isinstance(body, dict):
+        raise HTTPException(400, "The request body must be a JSON object.")
+    source = body.get("source")
+    if not isinstance(source, str):
+        raise HTTPException(400, "source must be a string.")
+    color = body.get("color", "#000000")
+    if not isinstance(color, str):
+        color = "#000000"
+    dpi = body.get("dpi", 300)
+    if not isinstance(dpi, int) or dpi < 50 or dpi > 1200:
+        dpi = 300
+    return await _latex_job(body, latex_core.render_equation, source, color, dpi)
+
+
+
 @router.post("/render")
 async def render(request: Request):
     """Render a figure record from generated (structured) or custom source (contract s4i).

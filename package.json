@@ -13,6 +13,7 @@
   "build": {
     "appId": "com.biowess.laurevinerose",
     "productName": "Laurevine Rose",
+    "copyright": "Copyright © 2026 Biowess",
     "directories": {
       "output": "dist-package"
     },
@@ -44,10 +45,11 @@
       {
         "from": "dist/run",
         "to": "backend",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*"]
       },
+        { "from": "licenses",
+        "to": "licenses",
+        "filter": ["**/*"] },
       {
         "from": "LICENSE.txt",
         "to": "."
@@ -55,12 +57,14 @@
       {
         "from": "THIRD_PARTY_NOTICES.txt",
         "to": "."
+      },
+      {
+        "from": "TRADEMARK.md",
+        "to": "."
       }
     ],
     "win": {
-      "target": [
-        "nsis"
-      ],
+      "target": ["nsis"],
       "icon": "Assets/appicon.png"
     },
     "nsis": {
@@ -71,45 +75,35 @@
       "target": [
         {
           "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": ["x64", "arm64"]
         },
         {
           "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": ["x64", "arm64"]
         }
       ],
       "icon": "Assets/appicon.png"
     },
     "linux": {
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm"
-      ],
+      "target": ["AppImage", "deb", "rpm"],
       "category": "Office",
-      "maintainer": "Biowess <contact@biowess.com>",
+      "maintainer": "Biowess <biowess@proton.me>",
+      "synopsis": "A power-user presentation and slide authoring tool",
+      "description": "Laurevine Rose is a presentation authoring application with LaTeX figure support and advanced export controls.",
       "icon": "Assets/appicon.png"
     },
     "deb": {
       "priority": "optional"
     },
     "rpm": {
-      "fpm": [
-        "--rpm-os",
-        "linux"
-      ]
+      "fpm": ["--rpm-os", "linux"]
     }
   },
-  "homepage": "https://biowess.com",
+  "homepage": "https://biowess-dev.github.io/Biowess",
   "author": {
     "name": "Biowess",
-    "email": "contact@biowess.com"
+    "email": "biowess@proton.me",
+    "url": "https://biowess-dev.github.io/Biowess"
   },
   "license": "SEE LICENSE IN LICENSE.txt",
   "private": true,

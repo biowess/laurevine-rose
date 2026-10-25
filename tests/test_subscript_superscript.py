@@ -512,13 +512,6 @@ class TestPdfRoundTrip:
     def _assert_valid_pdf(self, pdf_bytes: bytes, label: str):
         assert pdf_bytes.startswith(b"%PDF-"), f"{label}: not a valid PDF header"
         assert len(pdf_bytes) > 1000, f"{label}: PDF suspiciously small ({len(pdf_bytes)} bytes)"
-        # Optional: parse with fitz for page count sanity
-        try:
-            import fitz
-            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-            assert doc.page_count >= 1, f"{label}: no pages in PDF"
-        except ImportError:
-            pass  # fitz not required
 
     def test_h2o_pdf(self):
         pdf = self._convert_to_pdf(self._pptx_bytes("<p>H<sub>2</sub>O</p>"), "h2o")

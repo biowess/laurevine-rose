@@ -27,11 +27,17 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 
+from backend.soffice import user_data_dir
+
 logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FONTS_DIR = os.path.join(BASE_DIR, "fonts")
-CACHE_DIR = os.path.join(FONTS_DIR, ".cache")
+# NOT under FONTS_DIR: in a packaged build FONTS_DIR lives inside the app's bundled
+# resources (e.g. an AppImage's read-only squashfs mount), so instantiated variable-font
+# files must be cached in the same writable, persistent userData folder everything else
+# writable (managed LibreOffice, setup-state.json) already uses. See backend/soffice.py.
+CACHE_DIR = os.path.join(user_data_dir(), "fonts-cache")
 
 # 38 Curated Fonts Catalog: id -> Canonical Family Name
 CURATED_FONTS_CATALOG: Dict[str, str] = {

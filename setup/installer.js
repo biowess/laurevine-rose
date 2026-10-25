@@ -146,7 +146,7 @@ function urlProblem(u, allowedHosts) {
   if (u.protocol !== 'https:') return 'not https';
   if (u.username || u.password) return 'credentials in url';
   if (u.port && u.port !== '443') return 'port';
-  if (!allowedHosts.has(u.hostname.toLowerCase().replace(/\.$/, ''))) return 'host not allowed';
+  if (allowedHosts && !allowedHosts.has(u.hostname.toLowerCase().replace(/\.$/, ''))) return 'host not allowed';   // allowedHosts === null: any https host (see manifest allow_any_https_redirect)
   return null;
 }
 
@@ -322,7 +322,7 @@ async function attempt(ctx, n) {
 /* download(opts) -> Promise<{ ok:true, key, version, filePath, sizeBytes, sha256, entry } | { ok:false, code, error, cancelled? }>
    opts: { userDataDir (required), signal?:AbortSignal, onProgress?:fn, key?, manifest?|manifestPath?,
            fs?, request?, sleep?, statfs?, platform?, arch?, maxAttempts? }  (the last group exists for tests)
-   onProgress({ component, key, phase:'preparing'|'downloading'|'retrying'|'verifying'|'done', attempt, maxAttempts,
+   onProgress({ component, key, phase:'preparing'|'downloading'|'retrying'|'verifying'|'downloaded', attempt, maxAttempts,
                 receivedBytes, totalBytes, percent, retryInMs?, message? }) — throttled; a throwing listener is ignored.
    Error codes: INVALID_MANIFEST UNSUPPORTED_PLATFORM UNVERIFIED_ENTRY INSECURE_URL BUSY DISK_SPACE DISK_CHECK_UNAVAILABLE
                 REDIRECT_BLOCKED HTTP_STATUS TLS NETWORK SIZE_MISMATCH HASH_MISMATCH IO CANCELLED. */
@@ -354,7 +354,7 @@ async function download(opts) {
   const lockPath = path.join(dir, LOCK_NAME);
   let haveFileLock = false;
   const ctx = {
-    f, key, entry, signal, allowedHosts: v.allowedHosts, url: new URL(entry.url),
+    f, key, entry, signal, allowedHosts: manifest.allow_any_https_redirect === true ? null : v.allowedHosts, url: new URL(entry.url),
     request: o.request || https.request,
     headers: { 'User-Agent': 'LaurevineRose-Setup', 'Accept-Encoding': 'identity', Accept: '*/*' },
     partPath: path.join(dir, v.fileName + '.part'), finalPath: path.join(dir, v.fileName),
@@ -394,7 +394,10 @@ async function download(opts) {
       try {
         await removeQuiet(f, ctx.partPath);
         const r = await attempt(ctx, n);
-        ctx.emit({ phase: 'done', attempt: n, receivedBytes: total });
+        // 'downloaded' (not 'done'): the transfer is complete, but install() still has to extract, activate,
+        // probe and smoke-test it before the operation as a whole is finished -- reusing 'done' here previously
+        // made the UI believe the whole install had succeeded right as the download finished.
+        ctx.emit({ phase: 'downloaded', attempt: n, receivedBytes: total });
         return { ok: true, key, version: entry.version, filePath: ctx.finalPath, sizeBytes: r.sizeBytes, sha256: r.sha256, entry, haveFileLock, lockPath };
       } catch (e) {
         await removeQuiet(f, ctx.partPath); // never leave a partial or unverified file behind

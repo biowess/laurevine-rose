@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Startup script for the Research Presentation Editor (v1.1.0).
+"""Startup script for Laurevine Rose (v1.0.0).
 
 Launches the local FastAPI server on 127.0.0.1:8000 (or next free port) serving both the frontend
 and the PPTX export / project backend.
@@ -19,7 +19,7 @@ import webbrowser
 
 import uvicorn
 
-VERSION = "1.1.0"
+VERSION = "1.0.0"
 
 
 def is_loopback(host: str) -> bool:
@@ -158,7 +158,7 @@ def _open_browser_thread(url: str, check_url: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=f"Research Presentation Editor v{VERSION}")
+    parser = argparse.ArgumentParser(description=f"Laurevine Rose v{VERSION}")
     parser.add_argument("--open", "-o", action="store_true", help="Automatically open editor in default web browser")
     parser.add_argument("--port", "-p", type=int, default=None, help="Port to bind to (default: 8000 or next free port)")
     parser.add_argument("--host", type=str, default=None, help="Host to bind to (default: 127.0.0.1)")
@@ -193,7 +193,7 @@ def main():
         port = requested_port
 
     url = f"http://{host}:{port}"
-    print(f"Starting Research Presentation Editor v{VERSION} on {url} ...")
+    print(f"Starting Laurevine Rose v{VERSION} on {url} ...")
 
     if args.open:
         check_url = f"http://127.0.0.1:{port}/api/health" if host in ("0.0.0.0", "::") else f"{url}/api/health"

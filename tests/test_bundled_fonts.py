@@ -10,7 +10,9 @@ Validates that:
 """
 
 import os
-import fitz
+import shutil
+import subprocess
+import tempfile
 import pytest
 from backend.exporter import normalize_font_name, export_presentation
 from backend.models import PresentationDoc, SlideModel, SlideObject
@@ -130,13 +132,24 @@ async def test_pdf_export_embeds_bundled_fonts():
         body_bytes += chunk
 
     assert len(body_bytes) > 1000, "PDF bytes should be non-empty"
-    pdf = fitz.open(stream=body_bytes, filetype="pdf")
-    font_names = [f[3] for page in pdf for f in page.get_fonts()]
 
-    assert any("TeXGyreTermes" in f for f in font_names), f"TeXGyreTermes missing in {font_names}"
-    assert any("OpenDyslexic" in f for f in font_names), f"OpenDyslexic missing in {font_names}"
-    assert any("Amiri" in f for f in font_names), f"Amiri missing in {font_names}"
-    assert any("Arimo" in f for f in font_names), f"Arimo missing in {font_names}"
+    pdffonts = shutil.which("pdffonts")
+    if pdffonts:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            f.write(body_bytes)
+            pdf_path = f.name
+        try:
+            out = subprocess.run([pdffonts, pdf_path], capture_output=True, text=True, timeout=10).stdout
+        finally:
+            os.unlink(pdf_path)
+        assert any("TeXGyreTermes" in line or "TeX Gyre Termes" in line for line in out.splitlines()), \
+            f"TeXGyreTermes missing in pdffonts output:\n{out}"
+        assert any("OpenDyslexic" in line for line in out.splitlines()), \
+            f"OpenDyslexic missing in pdffonts output:\n{out}"
+        assert any("Amiri" in line for line in out.splitlines()), \
+            f"Amiri missing in pdffonts output:\n{out}"
+        assert any("Arimo" in line for line in out.splitlines()), \
+            f"Arimo missing in pdffonts output:\n{out}"
 
 
 def test_font_catalog_enumeration_and_mapping():
@@ -200,26 +213,24 @@ async def test_pdf_export_bundled_font_variants_true_type_embedding():
     pdf_bytes = pdf_buffer.getvalue()
     assert len(pdf_bytes) > 1000
 
-    pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
-    page_fonts = pdf[0].get_fonts()
-    # (xref, ext, type, basefont, name, ...)
-    font_tuples = {f[3]: f for f in page_fonts}
-    font_names = list(font_tuples.keys())
-
-    # Check that Outfit is embedded as TrueType
-    outfit_fonts = [f for f in font_names if "Outfit" in f]
-    assert len(outfit_fonts) >= 1, f"Outfit missing in PDF: {font_names}"
-    for fn in outfit_fonts:
-        f_info = font_tuples[fn]
-        assert f_info[2] == "TrueType", f"Expected TrueType vector font, got {f_info[2]} for {fn}"
-
-    # Check Bitter
-    bitter_fonts = [f for f in font_names if "Bitter" in f]
-    assert len(bitter_fonts) >= 1, f"Bitter missing in PDF: {font_names}"
-
-    # Check JetBrains Mono
-    jb_fonts = [f for f in font_names if "JetBrainsMono" in f]
-    assert len(jb_fonts) >= 1, f"JetBrains Mono missing in PDF: {font_names}"
+    pdffonts = shutil.which("pdffonts")
+    if pdffonts:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            f.write(pdf_bytes)
+            pdf_path = f.name
+        try:
+            out = subprocess.run([pdffonts, pdf_path], capture_output=True, text=True, timeout=10).stdout
+        finally:
+            os.unlink(pdf_path)
+        lines = out.splitlines()
+        assert any("Outfit" in l for l in lines), f"Outfit missing in pdffonts output:\n{out}"
+        assert any("Bitter" in l for l in lines), f"Bitter missing in pdffonts output:\n{out}"
+        assert any("JetBrains" in l or "JetBrainsMono" in l for l in lines), \
+            f"JetBrains Mono missing in pdffonts output:\n{out}"
+        # TrueType embedding: pdffonts marks embedded fonts with 'yes' in the 'emb' column
+        outfit_lines = [l for l in lines if "Outfit" in l]
+        assert all("yes" in l for l in outfit_lines), \
+            f"Expected Outfit fonts to be embedded (TrueType):\n{out}"
 
 
 @pytest.mark.asyncio

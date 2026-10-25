@@ -189,10 +189,9 @@ def test_representative_sample_deck_wrapping_parity():
     if not soffice:
         pytest.skip("LibreOffice not available on PATH")
 
-    try:
-        import fitz
-    except ImportError:
-        pytest.skip("PyMuPDF (fitz) not installed")
+    pdftotext = shutil.which("pdftotext")
+    if not pdftotext:
+        pytest.skip("pdftotext (poppler) not installed — skipping geometry parity check")
 
     rpe_path = os.path.join(BASE_DIR, "representative_sample_deck.rpe.json")
     with open(rpe_path, "r", encoding="utf-8") as f:
@@ -236,15 +235,22 @@ def test_representative_sample_deck_wrapping_parity():
         cmd = [soffice, f"-env:UserInstallation=file://{user_dir}", "--headless", "--convert-to", "pdf", pptx_path, "--outdir", tmpdir]
         subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
-        doc_pdf = fitz.open(pdf_path)
-        page = doc_pdf[0]
-        words = page.get_text("words")
-        # Extract words in the s1_body region: x=64, y=180, w=540, h=240 logical px -> pt bounds
-        body_words = [w for w in words if 45 <= w[0] <= 460 and 130 <= w[1] <= 340]
+        # Use pdftotext -bbox to get per-word bounding boxes (outputs HTML with <word> elements)
+        import re as _re
+        bbox_result = subprocess.run(
+            [pdftotext, "-bbox", pdf_path, "-"],
+            capture_output=True, text=True, timeout=30
+        )
+        # Each word: <word xMin="X" yMin="Y" xMax="X2" yMax="Y2">TEXT</word>
+        word_pattern = _re.compile(r'<word xMin="([\d.]+)" yMin="([\d.]+)"[^>]*>([^<]+)</word>')
+        raw_words = [(float(m.group(1)), float(m.group(2)), m.group(3))
+                     for m in word_pattern.finditer(bbox_result.stdout)]
+        # Filter to the s1_body region (same approximate bounds as before)
+        body_words = [(x, y, t) for x, y, t in raw_words if 45 <= x <= 460 and 130 <= y <= 340]
 
-        lines_dict = {}
-        for w in body_words:
-            top_bucket = round(w[1], 1)
+        lines_dict: dict = {}
+        for x, y, text in body_words:
+            top_bucket = round(y, 1)
             found = None
             for k in lines_dict:
                 if abs(k - top_bucket) < 3:
@@ -253,16 +259,11 @@ def test_representative_sample_deck_wrapping_parity():
             if found is None:
                 found = top_bucket
                 lines_dict[found] = []
-            lines_dict[found].append(w[4])
+            lines_dict[found].append(text)
 
         sorted_tops = sorted(lines_dict.keys())
         lines = [" ".join(lines_dict[t]) for t in sorted_tops]
 
-        # In preview, Paragraph 1 wraps into 4 lines:
-        # Line 1: 'This paragraph exercises multi-line text'
-        # Line 2: 'wrapping across several lines within a bounded'
-        # Line 3: 'logical box. It contains italic emphasis, underlined'
-        # Line 4: 'text, and accent-colored spans.'
         assert len(lines) >= 6, f"Expected at least 6 lines in s1_body, got {len(lines)}: {lines}"
         assert not any("•" in l for l in lines), "s1_body must not contain bullet points"
         assert "This paragraph exercises multi-line text" in lines[0]

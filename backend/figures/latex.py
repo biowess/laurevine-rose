@@ -2,7 +2,7 @@
 
 Only the engine command runs (``<engine> -interaction=nonstopmode -halt-on-error -no-shell-escape -file-line-error main.tex``),
 in a fresh temp folder with a scrubbed environment. No package is ever downloaded and no other program (bibtex, makeindex,
-latexmk, ...) is started; the only other executables are the rasterizer fallbacks ``pdftoppm`` / ``pdfinfo``.
+latexmk, ...) is started; the only other executables are the rasterizers ``pdftoppm`` / ``pdfinfo``.
 Statuses: ``ok | compile_failed | render_failed | timeout | no_compiler | invalid``.
 """
 from __future__ import annotations
@@ -23,14 +23,6 @@ from backend.figures import jobs
 from backend.figures.models import MAX_DPI, MAX_MEGAPIXELS, MAX_PREVIEW_CHARS, MAX_PX_SIDE, MAX_SIDE_IN, MAX_SOURCE_CHARS, MIN_DPI, MIN_SIDE_IN
 from backend.figures.runner import _ENV_KEEP, MAX_STREAM_BYTES, _Capture, _kill_tree, _png_size, _remove_tree
 from backend.figures.runtime import LATEX_TIMEOUT_S, TEX_ENGINES
-
-try:                                    # PyMuPDF is the rasterizer; pdftoppm is the fallback
-    import pymupdf as _mu
-except ImportError:                     # pragma: no cover - depends on the machine
-    try:
-        import fitz as _mu
-    except ImportError:
-        _mu = None
 
 MODES = ("document", "fragment")
 ENGINES = TEX_ENGINES
@@ -288,13 +280,7 @@ def _write_assets(work: Path, assets: Optional[Mapping[str, Any]]) -> None:
 
 
 def pdf_pages(pdf: bytes) -> Optional[int]:
-    """Page count (PyMuPDF, else pdfinfo); None when neither can tell. Raises RenderError for an unreadable PDF."""
-    if _mu is not None:
-        try:
-            with _mu.open(stream=pdf, filetype="pdf") as doc:
-                return doc.page_count
-        except Exception as exc:  # noqa: BLE001 - any parser failure means an unusable PDF
-            raise RenderError(f"The PDF could not be opened ({str(exc)[:120]}).")
+    """Page count via pdfinfo; None when pdfinfo is unavailable or cannot read the PDF. Raises RenderError for an unreadable PDF."""
     info = _poppler_info(pdf)
     return info[0] if info else None
 
@@ -437,6 +423,15 @@ def _target(w_pt: float, h_pt: float, dpi: int, w_in: Optional[float]) -> float:
 
 def _poppler_run(cmd: List[str]) -> subprocess.CompletedProcess:
     env = {k: v for k, v in os.environ.items() if k.upper() in _ENV_KEEP}
+    # pdftoppm/pdfinfo are external system binaries, not the bundled engine itself; in a packaged
+    # (PyInstaller) build LD_LIBRARY_PATH here is the bootloader's own bundle path, which shadows the
+    # system's libstdc++/libgcc ahead of the ones poppler was built against (e.g. "GLIBCXX_3.4.32 not
+    # found"). Restore the pre-bootloader value PyInstaller saves in LD_LIBRARY_PATH_ORIG, or drop the
+    # var entirely if there wasn't one -- same fix as the one already applied for soffice in exporter.py.
+    if "LD_LIBRARY_PATH_ORIG" in os.environ:
+        env["LD_LIBRARY_PATH"] = os.environ["LD_LIBRARY_PATH_ORIG"]
+    else:
+        env.pop("LD_LIBRARY_PATH", None)
     return subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, timeout=TOOL_TIMEOUT, env=env)
 
 
@@ -460,34 +455,33 @@ def _poppler_info(pdf: bytes) -> Optional[Tuple[int, float, float]]:
 
 
 def alpha_supported() -> bool:
-    """A transparent PNG needs PyMuPDF; the poppler fallback always draws on white."""
-    return _mu is not None
+    """Transparent PNG export is not supported: pdftoppm always renders on a white background.
+
+    This function is retained so callers (export.py, tests) can check capability without importing
+    private state.  It always returns False now that PyMuPDF has been removed.
+    """
+    return False
 
 
 def rasterize_pdf(pdf: bytes, dpi: int, w_in: Optional[float] = None, alpha: bool = False) -> Dict[str, Any]:
-    """First page -> PNG. `w_in` scales the page to that width in inches (pixel width = w_in * dpi), else natural size at `dpi`.
-    `alpha` leaves what the page does not paint transparent (PyMuPDF only). -> {png, widthPx, heightPx, pages, rasterizer}; raises RenderError."""
-    if alpha and _mu is None:
-        raise RenderError("A transparent background needs PyMuPDF (pip install pymupdf); the poppler fallback draws on white.")
-    if _mu is not None:
-        try:
-            with _mu.open(stream=pdf, filetype="pdf") as doc:
-                if doc.page_count < 1:
-                    raise RenderError("The PDF has no pages.")
-                page = doc[0]
-                zoom = _target(page.rect.width, page.rect.height, dpi, w_in)
-                pix = page.get_pixmap(matrix=_mu.Matrix(zoom, zoom), alpha=alpha)
-                return {"png": pix.tobytes("png"), "widthPx": pix.width, "heightPx": pix.height, "pages": doc.page_count, "rasterizer": "pymupdf"}
-        except RenderError:
-            raise
-        except Exception as exc:  # noqa: BLE001
-            raise RenderError(f"PyMuPDF could not draw the first page ({str(exc)[:120]}).")
+    """First page -> PNG via pdftoppm (Poppler).  `w_in` scales the page to that width in inches
+    (pixel width = round(w_in * dpi)), else natural size at `dpi`.
+    `alpha=True` is not supported without PyMuPDF and raises RenderError immediately.
+    -> {png, widthPx, heightPx, pages, rasterizer}; raises RenderError.
+    """
+    if alpha:
+        raise RenderError(
+            "Transparent PNG export requires PyMuPDF, which is not installed. "
+            "Choose a white background, or install poppler-utils (pdftoppm) for opaque PNG export."
+        )
     exe = shutil.which("pdftoppm")
     if exe is None:
-        raise RenderError("No rasterizer is available: install PyMuPDF (pip install pymupdf) or poppler's pdftoppm.")
+        raise RenderError(
+            "No rasterizer is available: install poppler-utils (pdftoppm) to enable PDF-to-PNG conversion."
+        )
     info = _poppler_info(pdf)
     if info:
-        zoom = _target(info[1], info[2], dpi, w_in)
+        _target(info[1], info[2], dpi, w_in)   # validate pixel caps before running pdftoppm
     with tempfile.TemporaryDirectory(prefix="rpe_pdf_") as tmp:
         src = Path(tmp) / "in.pdf"
         src.write_bytes(pdf)
@@ -619,3 +613,137 @@ def parse_render_request(body: Any) -> Tuple[Optional[bytes], Optional[str], str
     dpi = 450 if body.get("dpi") is None else _whole(body["dpi"], MIN_DPI, MAX_DPI, "dpi")
     return (pdf, body.get("source"), _choice(body, "mode", MODES, "document"), _choice(body, "engine", ENGINES, "pdflatex"),
             (float(w_in) if w_in else None), dpi, _choice(body, "background", ("white", "transparent"), "white"))
+
+
+# ------------------------------------------------------------------ LaTeX equation workflow
+def normalize_equation_source(src: str) -> str:
+    """Normalizes an equation snippet so it compiles reliably in LaTeX standalone display math."""
+    s = (src or "").strip()
+    # Strip enclosing display or inline math delimiters if present
+    if s.startswith(r"\[") and s.endswith(r"\]"):
+        s = s[2:-2].strip()
+    elif s.startswith("$$") and s.endswith("$$"):
+        s = s[2:-2].strip()
+    elif s.startswith("$") and s.endswith("$"):
+        s = s[1:-1].strip()
+
+    # Convert multiline align/equation environments to aligned for standalone compatibility
+    if s.startswith(r"\begin{align}") and s.endswith(r"\end{align}"):
+        s = r"\begin{aligned}" + s[13:-11] + r"\end{aligned}"
+    elif s.startswith(r"\begin{align*}") and s.endswith(r"\end{align*}"):
+        s = r"\begin{aligned}" + s[14:-12] + r"\end{aligned}"
+    elif s.startswith(r"\begin{equation}") and s.endswith(r"\end{equation}"):
+        s = s[16:-14].strip()
+    elif s.startswith(r"\begin{equation*}") and s.endswith(r"\end{equation*}"):
+        s = s[17:-15].strip()
+
+    return rf"$\displaystyle {s} $"
+
+
+def render_equation(latex_source: str, color: str = "#000000", dpi: int = 300, job: Optional[jobs.Job] = None) -> Dict[str, Any]:
+    """Compiles a LaTeX equation and renders a high-resolution PNG with transparent background.
+
+    Uses the existing LaTeX rendering pipeline (pdflatex + pdftoppm) without PyMuPDF.
+    Alpha channel and foreground color are extracted from anti-aliasing against white.
+    """
+    started = time.monotonic()
+    s = (latex_source or "").strip()
+    if not s:
+        return {
+            "ok": False,
+            "status": "invalid",
+            "message": "LaTeX equation source is empty.",
+            "preview": None,
+            "widthPx": None,
+            "heightPx": None,
+            "errors": [],
+            "missing": [],
+            "durationMs": 0,
+        }
+
+    wrapped = normalize_equation_source(s)
+    res = compile_latex(wrapped, mode="fragment", engine="pdflatex", job=job)
+    if res.status != "ok":
+        return {
+            "ok": False,
+            "status": res.status,
+            "message": res.message or "LaTeX compilation failed.",
+            "errors": res.errors,
+            "missing": res.missing,
+            "log": res.log,
+            "preview": None,
+            "widthPx": None,
+            "heightPx": None,
+            "durationMs": int((time.monotonic() - started) * 1000),
+        }
+
+    try:
+        _check_pdf(res.pdf)
+        ras = rasterize_pdf(res.pdf, dpi=dpi, alpha=False)
+        from PIL import Image
+        import numpy as np
+        import io
+
+        img = Image.open(io.BytesIO(ras["png"])).convert("RGB")
+        arr = np.array(img, dtype=np.float32)
+
+        # Parse target hex color
+        c = (color or "#000000").lstrip("#")
+        if len(c) == 3:
+            c = "".join([x * 2 for x in c])
+        try:
+            r_val, g_val, b_val = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+        except Exception:
+            r_val, g_val, b_val = 0, 0, 0
+
+        # Luminance on white: pixel = 255 * (1 - alpha) => alpha = 1 - lum
+        lum = (arr[:, :, 0] * 0.299 + arr[:, :, 1] * 0.587 + arr[:, :, 2] * 0.114) / 255.0
+        alpha = np.clip(1.0 - lum, 0.0, 1.0)
+
+        out = np.zeros((arr.shape[0], arr.shape[1], 4), dtype=np.uint8)
+        out[:, :, 0] = r_val
+        out[:, :, 1] = g_val
+        out[:, :, 2] = b_val
+        out[:, :, 3] = np.round(alpha * 255).astype(np.uint8)
+
+        out_im = Image.fromarray(out, "RGBA")
+        bbox = out_im.getbbox()
+        if bbox:
+            pad = 2
+            bbox = (
+                max(0, bbox[0] - pad),
+                max(0, bbox[1] - pad),
+                min(out_im.width, bbox[2] + pad),
+                min(out_im.height, bbox[3] + pad),
+            )
+            out_im = out_im.crop(bbox)
+
+        buf = io.BytesIO()
+        out_im.save(buf, format="PNG")
+        png_bytes = buf.getvalue()
+        preview_url = _data_url(png_bytes)
+
+        return {
+            "ok": True,
+            "status": "ok",
+            "message": "",
+            "preview": preview_url,
+            "widthPx": out_im.width,
+            "heightPx": out_im.height,
+            "dpi": dpi,
+            "errors": [],
+            "missing": [],
+            "durationMs": int((time.monotonic() - started) * 1000),
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "status": "render_failed",
+            "message": str(exc),
+            "errors": [],
+            "missing": [],
+            "preview": None,
+            "widthPx": None,
+            "heightPx": None,
+            "durationMs": int((time.monotonic() - started) * 1000),
+        }

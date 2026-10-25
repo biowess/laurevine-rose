@@ -2740,7 +2740,7 @@ async function testLatex() {
   const g0 = { widthPx: 600, heightPx: 400, dpi: 150 }, pn = L.plan(g0, { native: true, dpi: 450 }), pc = L.plan(g0, { native: false, wIn: 3, dpi: 300 }), r6 = (x) => Math.round(x * 1e6) / 1e6;
   assert.deepStrictEqual([r6(pn.wIn), r6(pn.hIn), pn.wPx, pn.hPx, pc.wIn, r6(pc.hIn), pc.wPx, pc.hPx], [4, 2.666667, 1800, 1200, 3, 2, 900, 600]); assert.ok(Math.abs(pc.wPx / pc.hPx - g0.widthPx / g0.heightPx) < 1e-9, 'never stretched');
   assert.ok(L.plan(g0, { native: false, wIn: 30, dpi: 1200 }).refused && L.plan(null, {}) === null);
-  assert.deepStrictEqual([L.bgState({ rasterizer: 'pymupdf' }).ok, L.bgState({ rasterizer: null }).ok, L.bgState(null).ok], [true, false, false]);
+  assert.deepStrictEqual([L.bgState({ rasterizer: 'pdftoppm' }).ok, L.bgState({ rasterizer: null }).ok, L.bgState(null).ok], [false, false, false]);
   assert.deepStrictEqual(L.assets('\\includegraphics[width=3cm]{fig/a.png} % \\includegraphics{no.png}\n\\input{part}\n\\addplot[blue] table[x=a]{data.csv}\n\\pgfplotstableread{t.dat}\\includegraphics{fig/a.png}\\addplot table{\\tbl}'),
     [{ name: 'fig/a.png', kind: 'image' }, { name: 'part', kind: 'tex' }, { name: 't.dat', kind: 'data' }, { name: 'data.csv', kind: 'data' }], 'commented, repeated and macro references are not listed');
 
@@ -2832,7 +2832,7 @@ async function testLatex() {
   mode = 'ok'; ed.value = '$q$'; ed.opts.onChange('$q$');
   const nat = byId(b8, 'ltxnat'), wB = byId(b8, 'ltxw'), hB = byId(b8, 'ltxh'), dpiB = byId(b8, 'ltxdpi'), bgB = byId(b8, 'ltxbg'), readE = cls(b8, 'ltx__expread');
   assert.ok(nat.checked && wB.disabled && /Compile once to see the page size/.test(readE.textContent));
-  assert.ok(find(bgB, (n) => n.tag === 'option' && n.attrs.value === 'transparent')[0].disabled, 'Transparent is disabled with the reason when PyMuPDF is missing');
+  assert.ok(find(bgB, (n) => n.tag === 'option' && n.attrs.value === 'transparent')[0].disabled, 'Transparent is disabled because pdftoppm renders on white');
   btns(b8, 'Compile')[0].ls.click(); await tick(40);
   assert.ok(/^Native size: 4\.0 × 2\.67 in @ 450 dpi ≈ 1800 × 1200 px/.test(readE.textContent) && hB.disabled, readE.textContent);
   nat.checked = false; nat.ls.change(); wB.value = '3'; wB.ls.input();
@@ -2853,8 +2853,8 @@ async function testLatex() {
   assert.ok(!byId(d9.o.body, 'ltxnat').checked && byId(d9.o.body, 'ltxw').value === '3' && byId(d9.o.body, 'ltxdpi').value === '300' && byId(d9.o.body, 'ltxbg').value === 'white' && /^3\.0 × 2\.0 in @ 300 dpi = 900 × 600 px/.test(cls(d9.o.body, 'ltx__expread').textContent), 'reopen restores size, dpi and background');
   assert.strictEqual(compiles().length + rends().length, n8, 'reopening compiles nothing');
   const cy = compiles().length; btns(d9.o.body, 'Export compiled PDF')[0].ls.click(); await tick(60); assert.strictEqual(compiles().length, cy + 1, 'a reopened figure keeps no PDF, so the first export compiles');
-  raster = 'pymupdf'; await F.refresh(); const d10 = L.open(); await tick(40);
-  assert.ok(!find(byId(d10.o.body, 'ltxbg'), (n) => n.tag === 'option' && n.attrs.value === 'transparent')[0].disabled, 'Transparent is offered when the rasterizer is PyMuPDF'); raster = null; await F.refresh();
+  raster = 'pdftoppm'; await F.refresh(); const d10 = L.open(); await tick(40);
+  assert.ok(find(byId(d10.o.body, 'ltxbg'), (n) => n.tag === 'option' && n.attrs.value === 'transparent')[0].disabled, 'Transparent remains disabled when rasterizer is pdftoppm'); raster = null; await F.refresh();
 
   // no TeX compiler: explicit panel, detected engines listed, no fallback renderer, Compile disabled and never sends a request
   engines = {}; await F.refresh(); const nc0 = compiles().length;

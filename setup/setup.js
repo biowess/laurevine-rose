@@ -20,7 +20,8 @@
   const backBtn = document.getElementById('setupBack');
   const nextBtn = document.getElementById('setupNext');
   const declineBtn = document.getElementById('setupDecline');
-  const agree = document.getElementById('licenseAgree');
+  // "I Agree" is the Continue button on the license step; this holds the gate state (enabled once the notice text has loaded).
+  const agree = { checked: false, disabled: true, addEventListener() {} };
   const licenseEl = document.getElementById('licenseText');
   const msgEl = document.getElementById('licenseMsg');
   let index = -1;
@@ -37,14 +38,34 @@
     msgEl.classList.toggle('is-error', !!isError);
   }
 
-  // Continue is enabled everywhere except: while saving, on license until checked, on components until passed, on ready until validated.
+  // Continue is enabled everywhere except: while saving, on license until the notice has loaded, on components until passed, on ready until validated.
+  /* Legal document viewer (Apache License / Trademark / Third-Party Notices), used by the license step and the repair wizard. */
+  const DOC_TITLES = { apache: 'Apache License 2.0', trademark: 'Trademark Notice', notices: 'Third-Party Notices' };
+  async function showDoc(key) {
+    let res = null;
+    try { res = activeAPI && typeof activeAPI.getDoc === 'function' ? await activeAPI.getDoc(key) : null; } catch (_) { res = null; }
+    if (!res || !res.ok) { setMsg((res && res.error) || 'The document could not be loaded.', true); return; }
+    const dlg = document.createElement('dialog');
+    dlg.setAttribute('aria-label', DOC_TITLES[key] || 'Document');
+    dlg.style.cssText = 'max-width:680px;width:90vw;max-height:80vh;padding:1.25rem;border:1px solid #ccc;border-radius:6px;overflow:auto;';
+    const h = document.createElement('h2'); h.textContent = DOC_TITLES[key] || 'Document'; h.style.cssText = 'margin:0 0 0.75rem 0;font-size:1rem;';
+    const pre = document.createElement('pre'); pre.textContent = res.text; pre.style.cssText = 'white-space:pre-wrap;overflow-wrap:break-word;font-size:0.75rem;line-height:1.5;margin:0 0 1rem 0;';
+    const closeBtn = document.createElement('button'); closeBtn.type = 'button'; closeBtn.className = 'btn btn--primary'; closeBtn.textContent = 'Close';
+    closeBtn.addEventListener('click', () => dlg.close());
+    dlg.append(h, pre, closeBtn);
+    document.body.appendChild(dlg);
+    dlg.addEventListener('close', () => dlg.remove());
+    dlg.showModal();
+  }
+  document.querySelectorAll('[data-doc]').forEach((b) => b.addEventListener('click', () => showDoc(b.dataset.doc)));
+
   function syncNext() {
     const id = available()[index];
     if (id === 'ready') {
       nextBtn.textContent = 'Launch Laurevine Rose';
       nextBtn.disabled = busy || readyValidating || !readyValidationOk;
     } else {
-      nextBtn.textContent = 'Continue';
+      nextBtn.textContent = id === 'license' ? 'I Agree' : 'Continue';
       nextBtn.disabled = busy || (id === 'license' && !(agree.checked && !agree.disabled)) || (id === 'components' && (checking || !componentsOk));
     }
   }
@@ -143,7 +164,7 @@
     const fail = (msg) => { licenseEl.textContent = 'The license text could not be loaded.'; setMsg(msg, true); };
     if (!api || typeof api.getLicense !== 'function') { fail('The license text could not be loaded.'); return Promise.resolve(); }
     return Promise.resolve(api.getLicense()).then((res) => {
-      if (res && res.ok) { licenseEl.textContent = res.text; agree.disabled = false; }
+      if (res && res.ok) { licenseEl.textContent = res.text; agree.disabled = false; agree.checked = true; }
       else fail((res && res.error) || 'The license text could not be loaded.');
       syncNext();
     }).catch(() => { fail('The license text could not be loaded.'); syncNext(); });
@@ -222,6 +243,7 @@
   const PHASE_NAMES = {
     downloading: 'Downloading…',
     verifying: 'Verifying…',
+    downloaded: 'Downloaded',
     extracting: 'Extracting…',
     testing: 'Testing…',
     done: 'Ready'
@@ -275,7 +297,10 @@
   }
 
   function updateProgress(p) {
-    if (!p) return;
+    // Ignore progress events that arrive after the operation is no longer active (completed, cancelled or
+    // failed): an in-flight event can otherwise land after the final state and make a finished/cancelled
+    // install look like it is still downloading.
+    if (!p || currentCardState !== 'installing') return;
     const ph = p.phase || 'downloading';
     if (pdfPhase) pdfPhase.textContent = PHASE_NAMES[ph] || (ph.charAt(0).toUpperCase() + ph.slice(1) + '…');
     const pct = Math.min(100, Math.max(0, p.percent != null ? p.percent : 0));
@@ -369,7 +394,7 @@
       });
     }
 
-    // Repair-mode extra actions: Remove Managed / View License
+    // Repair-mode extra action: Remove Managed (component-management control, kept Settings-only).
     if (IS_REPAIR) {
       const pdfAvailSection = document.getElementById('pdfAvailable');
       if (pdfAvailSection) {
@@ -381,38 +406,21 @@
         removeBtn.textContent = 'Remove managed converter';
         removeBtn.addEventListener('click', removeManaged);
         pdfAvailSection.appendChild(removeBtn);
+      }
+    }
 
-        const viewLicBtn = document.createElement('button');
-        viewLicBtn.type = 'button';
-        viewLicBtn.className = 'btn btn--sm';
-        viewLicBtn.id = 'pdfViewLicenseBtn';
-        viewLicBtn.style.marginTop = '0.5rem';
-        viewLicBtn.textContent = 'View license';
-        viewLicBtn.addEventListener('click', async () => {
-          if (!activeAPI || !activeAPI.getLicense) return;
-          try {
-            const res = await activeAPI.getLicense();
-            if (res && res.ok) {
-              const text = res.text;
-              const dlg = document.createElement('dialog');
-              dlg.style.cssText = 'max-width:680px;width:90vw;max-height:80vh;padding:1.25rem;border:1px solid #ccc;border-radius:6px;overflow:auto;';
-              const pre = document.createElement('pre');
-              pre.style.cssText = 'white-space:pre-wrap;font-size:0.75rem;line-height:1.5;margin:0 0 1rem 0;';
-              pre.textContent = text;
-              const closeBtn = document.createElement('button');
-              closeBtn.type = 'button';
-              closeBtn.className = 'btn btn--primary';
-              closeBtn.textContent = 'Close';
-              closeBtn.addEventListener('click', () => dlg.close());
-              dlg.appendChild(pre);
-              dlg.appendChild(closeBtn);
-              document.body.appendChild(dlg);
-              dlg.showModal();
-              dlg.addEventListener('close', () => dlg.remove());
-            }
-          } catch (_) {}
+    // First-launch wizard only: legal document buttons. Omitted from the repair/Settings view,
+    // where these same documents are already reachable from the About page.
+    if (!IS_REPAIR) {
+      const pdfAvailSection = document.getElementById('pdfAvailable');
+      if (pdfAvailSection) {
+        [['apache', 'Apache License'], ['trademark', 'Trademark'], ['notices', 'Third-Party Notices']].forEach(([key, label]) => {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'btn btn--sm'; b.id = 'pdfView_' + key; b.style.cssText = 'margin-top:0.5rem;margin-right:0.5rem;';
+          b.textContent = label;
+          b.addEventListener('click', () => showDoc(key));
+          pdfAvailSection.appendChild(b);
         });
-        pdfAvailSection.appendChild(viewLicBtn);
       }
     }
 

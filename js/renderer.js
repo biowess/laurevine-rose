@@ -10,6 +10,7 @@
     const th = T.theme(doc), pal = T.palette(doc), ty = T.type(doc);
     const tok = { accent: th.accent, accent2: th.accent2, text: th.text, muted: th.muted, bg: th.bg, title: th.title };
     ['surface', 'border', 'card', 'onAccent'].forEach((k) => { if (th[k]) tok[k] = th[k]; });   // present only with a persisted palette
+    if (!tok.onAccent && RPE.layouts) { const v = RPE.layouts.tokens(doc).onAccent; if (v && v !== 'onAccent') tok.onAccent = v; }   // derived on-accent colour (same rule as the layouts)
     return {
       doc, th, pal, ty,
       col: (c) => (!c ? null : (tok[c] || c)),
@@ -503,8 +504,8 @@
   }
 
   /* Slide number: value = start number + position; style/geometry from doc.hf (defaults = the legacy bottom-right 12pt muted). */
-  function numberEl(doc, index, cx) {
-    const H = RPE.hf, st = H ? H.numberStyle(doc) : { fontSize: 12, align: 'right', color: 'muted' }, g = H ? H.numberGeom(doc) : null;
+  function numberEl(doc, slide, index, cx) {
+    const H = RPE.hf, st = H ? H.numberStyle(doc, slide) : { fontSize: 12, align: 'right', color: 'muted' }, g = H ? H.numberGeom(doc) : null;
     const n = document.createElement('div'); n.className = 'slide__num';
     n.textContent = H ? H.numberValue(doc, index) : index + 1;
     const s = n.style;
@@ -529,14 +530,17 @@
     el.style.background = slideBg; el.style.color = cx.th.text;
     el.style.fontFamily = T.cssFont(cx.ty.body);
     el.appendChild(decor(cx.th, slide.layout, doc.size));
-    /* header/footer sit behind the slide objects; in the editor an empty editable region still gets a (invisible) double-click target */
-    if (RPE.hf) RPE.hf.KEYS.forEach((k) => {
+    /* header/footer sit behind the slide objects, but above a full-bleed backdrop shape (Section / Quote) that would otherwise cover them;
+       in the editor an empty editable region still gets a (invisible) double-click target */
+    const bd = RPE.hf ? RPE.hf.backdrop(doc, slide).index : -1;
+    const addHF = () => { if (RPE.hf) RPE.hf.KEYS.forEach((k) => {
       const o = RPE.hf.view(doc, slide, k, opts.mode === 'edit');
       if (o) el.appendChild(hfEl(o, cx, childOpts));
-    });
-    slide.objects.forEach((o) => el.appendChild(objectEl(o, cx, childOpts)));
+    }); };
+    if (bd < 0) addHF();
+    slide.objects.forEach((o, i) => { el.appendChild(objectEl(o, cx, childOpts)); if (i === bd) addHF(); });
     if (opts.index != null && (RPE.hf ? RPE.hf.numberOn(doc, slide) : slide.layout !== 'title')) {
-      el.appendChild(numberEl(doc, opts.index, cx));
+      el.appendChild(numberEl(doc, slide, opts.index, cx));
     }
     if (opts.mode === 'edit') { const ov = document.createElement('div'); ov.className = 'slide__overlay-grid'; el.appendChild(ov); }
     return el;

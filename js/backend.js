@@ -76,7 +76,7 @@
      Every call resolves, never rejects: { ok:true, status, data|blob } or
      { ok:false, status, code:'offline'|'timeout'|'aborted'|'http'|'bad_response'|'too_large', message }.
      `message` is always one readable sentence for the UI (offline, 4xx detail, timeout). */
-  const FIG_TIMEOUT = { 'figures.render': 150000, 'figures.export': 240000, 'figures.dataset.parse': 60000, 'figures.runtime': 15000, 'figures.sample': 15000, 'figures.layouts': 15000, 'figures.python.data': 20000, 'figures.python.run': 150000, 'figures.python.cancel': 10000, 'figures.python.templates': 15000, 'figures.latex.compile': 100000, 'figures.latex.render': 100000, 'figures.latex.templates': 15000, 'figures.latex.wrapper': 15000, 'figures.job': 5000, 'figures.job.cancel': 10000, 'figures.jobs': 10000 };
+  const FIG_TIMEOUT = { 'figures.render': 150000, 'figures.export': 240000, 'figures.dataset.parse': 60000, 'figures.runtime': 15000, 'figures.sample': 15000, 'figures.layouts': 15000, 'figures.python.data': 20000, 'figures.python.run': 150000, 'figures.python.cancel': 10000, 'figures.python.templates': 15000, 'figures.latex.compile': 100000, 'figures.latex.render': 100000, 'figures.latex.equation': 100000, 'figures.latex.templates': 15000, 'figures.latex.wrapper': 15000, 'figures.job': 5000, 'figures.job.cancel': 10000, 'figures.jobs': 10000 };
   const MAX_CSV_BYTES = 5 * 1024 * 1024;
 
   function detailText(body, raw) {
@@ -167,7 +167,8 @@
       'figures.render': () => (p.purpose === 'final' ? 'Rendering final image' : 'Rendering preview'),
       'figures.export': () => 'Exporting ' + String(p.format || 'png').toUpperCase(),
       'figures.python.run': () => (p.purpose === 'final' ? 'Running Python (final image)' : 'Running Python'),
-      'figures.latex.compile': () => 'Compiling LaTeX', 'figures.latex.render': () => 'Rendering LaTeX image'
+      'figures.latex.compile': () => 'Compiling LaTeX', 'figures.latex.render': () => 'Rendering LaTeX image',
+      'figures.latex.equation': () => 'Rendering LaTeX equation'
     };
     function jobCall(path, body, extra) {
       const id = body.jobId = p.jobId || newJobId();
@@ -200,6 +201,10 @@
     }
     if (name === 'figures.latex.templates') return figureCall(name, '/api/figures/latex/templates', { headers: { Accept: 'application/json' } }, opt);
     if (name === 'figures.latex.wrapper') return figureCall(name, '/api/figures/latex/wrapper', json({ source: String(p.source || '') }), opt);
+    if (name === 'figures.latex.equation') {
+      const body = { source: String(p.source || ''), color: p.color || '#000000', dpi: p.dpi || 300 };
+      return jobCall('/api/figures/latex/equation', body);
+    }
     if (name === 'figures.latex.compile' || name === 'figures.latex.render') {
       const body = { mode: p.mode || 'document', engine: p.engine || 'pdflatex' };
       if (p.pdfBase64) body.pdfBase64 = p.pdfBase64; else body.source = String(p.source || '');   // render may start from a compiled PDF
@@ -315,6 +320,57 @@
         return { ok: false, status: res.status };
       } catch (err) {
         return { ok: false, status: 0, message: err.message };
+      }
+    }
+
+    if (name === 'presentation.import') {
+      const endpoint = baseUrl + '/api/presentation/import';
+      const file = payload && payload.file;
+      const signal = payload && payload.signal;
+      try {
+        let res;
+        if (typeof File !== 'undefined' && file instanceof File || (typeof Blob !== 'undefined' && file instanceof Blob)) {
+          const form = new FormData();
+          form.append('file', file, (file && file.name) || 'presentation.pptx');
+          res = await fetch(endpoint, {
+            method: 'POST',
+            body: form,
+            signal
+          });
+        } else if (payload && payload.fileBase64) {
+          res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileBase64: payload.fileBase64, fileName: payload.fileName }),
+            signal
+          });
+        } else {
+          return { ok: false, status: 400, message: 'No file provided for import.' };
+        }
+
+        if (!res.ok) {
+          let errDetail = 'PowerPoint import failed';
+          try {
+            const errJson = await res.json();
+            errDetail = (errJson && (errJson.detail || errJson.message)) || errDetail;
+            if (typeof errDetail === 'object') errDetail = JSON.stringify(errDetail);
+          } catch (e) { /* ignore */ }
+          return { ok: false, status: res.status, message: errDetail };
+        }
+
+        const data = await res.json();
+        return {
+          ok: true,
+          status: 200,
+          doc: data.doc,
+          warnings: data.warnings || [],
+          fileName: (file && file.name) || data.fileName || 'presentation.pptx'
+        };
+      } catch (err) {
+        if (err && err.name === 'AbortError') {
+          return { ok: false, status: 499, message: 'Import cancelled.' };
+        }
+        return { ok: false, status: 0, message: err.message || 'Local Python service is offline. Start it with python3 run.py.' };
       }
     }
 

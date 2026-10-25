@@ -1,1 +1,1 @@
-"""Test suite for Research Presentation Editor."""
+"""Test suite for Laurevine Rose."""

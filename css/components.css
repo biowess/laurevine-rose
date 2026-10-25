@@ -798,3 +798,23 @@ input[aria-invalid="true"].input { border-color: #B03A3A; }
   box-shadow: 0 0 0 2px var(--sel-bg), 0 0 0 4px var(--burgundy);
 }
 
+/* ---------- Equation editor (Insert > Equation; js/equation.js) ---------- */
+.eq-editor { display: flex; flex-direction: column; gap: 12px; }
+.eq-editor__section { display: flex; flex-direction: column; gap: 6px; }
+.eq-editor__field-label { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.03em; }
+.eq-editor__quickbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 2px; }
+.eq-snippet-btn { font-size: 11px; padding: 2px 7px; height: 24px; border: 1px solid var(--border); border-radius: 3px; background: #fafafa; }
+.eq-snippet-btn:hover { background: var(--hover); }
+.eq-editor__input { font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.45; padding: 8px 10px; border: 1px solid var(--border-2); border-radius: var(--r); background: #fff; color: var(--text); resize: vertical; min-height: 80px; }
+.eq-editor__input:focus-visible { outline: 2px solid var(--rose); outline-offset: 1px; }
+.eq-editor__color-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.eq-editor__color-input { width: 30px; height: 26px; padding: 0 2px; border: 1px solid var(--border-2); border-radius: var(--r); cursor: pointer; background: transparent; }
+.eq-editor__color-label { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--text); }
+.eq-editor__bg-hint { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+.eq-editor__stage { position: relative; min-height: 110px; max-height: 220px; display: grid; place-items: center; padding: 16px; border: 1px solid var(--border-2); border-radius: var(--r); overflow: auto; background-image: linear-gradient(45deg, rgba(0,0,0,0.04) 25%, transparent 25%), linear-gradient(-45deg, rgba(0,0,0,0.04) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(0,0,0,0.04) 75%), linear-gradient(-45deg, transparent 75%, rgba(0,0,0,0.04) 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px; }
+.eq-editor__preview-img { max-width: 100%; max-height: 180px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.12)); }
+.eq-editor__placeholder { color: var(--muted); font-size: 12.5px; font-style: italic; }
+.eq-editor__spin { position: absolute; right: 12px; top: 12px; }
+.eq-editor__error { padding: 8px 12px; background: #fff0f0; border: 1px solid #fecaca; border-radius: var(--r); color: #b91c1c; font-size: 12px; line-height: 1.4; word-break: break-word; }
+
+

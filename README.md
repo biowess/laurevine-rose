@@ -38,8 +38,6 @@
 5. [Getting Started](#getting-started)
 6. [Installation](#installation)
    - [6.1 Windows (.exe)](#61-windows-exe)
-   - [6.2 Debian / Ubuntu (.deb)](#62-debian--ubuntu-deb)
-   - [6.3 Fedora / RPM-based (.rpm)](#63-fedora--rpm-based-rpm)
    - [6.4 Linux AppImage](#64-linux-appimage)
 7. [Download Integrity (SHA-256)](#download-integrity-sha-256)
 8. [System Requirements](#system-requirements)
@@ -85,7 +83,7 @@ figures can be revisited and re-rendered later.
 | **Primary output** | Native PowerPoint `.pptx`, with optional PDF export |
 | **Project file format** | `.rpe.json` (full editable source, including figure data and code) |
 | **Distinguishing feature** | Scientific Figure Studio: structured plots, custom Python figures, multi-panel composites, and LaTeX/PGFPlots diagrams rendered and embedded as high-resolution images |
-| **Distribution formats** | Windows `.exe`, Debian/Ubuntu `.deb`, Fedora/RPM-based `.rpm`, Linux `.AppImage` |
+| **Distribution formats** | Windows `.exe`, Linux `.AppImage` |
 | **Target architecture** | x86_64 (64-bit) |
 | **Network behavior** | Local-only; the backend binds strictly to loopback addresses |
 | **License** | Proprietary, source-available. Free to use, modify for private use only, no resale or redistribution without permission. See [License](#license) |
@@ -289,7 +287,7 @@ whitespace are preserved: panels are never shrunk to fit, and the canvas grows t
 
 Author and compile TikZ diagrams, commutative diagrams, and PGFPlots charts using `pdflatex`, `xelatex` (for
 OpenType/TrueType system fonts via `fontspec`), or `lualatex`. Compiled output is rasterized to a high-resolution
-PNG via PyMuPDF. The compiler log view highlights errors with direct line-number jumps back into the source editor.
+PNG via Poppler's `pdftoppm`. The compiler log view highlights errors with direct line-number jumps back into the source editor.
 TeX shell escape is disabled, and the compiler rejects source that references absolute paths, parent-directory
 traversal, or home-directory paths in `\input`, `\include`, or `\includegraphics`.
 
@@ -366,8 +364,6 @@ All four distribution formats below are built for the **x86_64 (64-bit)** archit
 | Format | Typical filename (current release) |
 | :--- | :--- |
 | Windows installer | `LaurevineRose-Setup-1.0.0-x86_64.exe` |
-| Debian/Ubuntu package | `laurevinerose_1.0.0_amd64.deb` |
-| Fedora/RPM package | `laurevinerose-1.0.0.x86_64.rpm` |
 | Linux AppImage | `LaurevineRose-1.0.0-x86_64.AppImage` |
 | Checksum manifest | `SHA256SUMS` |
 
@@ -383,27 +379,7 @@ unofficial repackaged copies.
    before proceeding if you want extra assurance.
 3. Once installed, launch **Laurevine Rose** from the Start Menu or desktop shortcut created by the installer.
 
-### 6.2 Debian / Ubuntu (.deb)
-
-```bash
-sudo apt install ./laurevinerose_1.0.0_amd64.deb
-```
-
-Replace `laurevinerose_1.0.0_amd64.deb` with the exact filename you downloaded. This installs Laurevine Rose and
-registers it with your desktop's application menu. This workflow is expected to work on Debian and Ubuntu and
-their closely related derivatives; compatibility with every Debian-based distribution is not independently
-verified.
-
-### 6.3 Fedora / RPM-based (.rpm)
-
-```bash
-sudo dnf install ./laurevinerose-1.0.0-1.x86_64.rpm
-```
-
-Replace the filename with the one you downloaded, and substitute your distribution's package manager (`dnf`,
-`zypper`, `yum`, etc.) as appropriate.
-
-### 6.4 Linux AppImage
+### 6.2 Linux AppImage
 
 The AppImage is a portable, single-file build that does not require installation through a system package manager.
 
@@ -414,16 +390,11 @@ chmod +x LaurevineRose-1.0.0-x86_64.AppImage
 
 If your desktop environment does not support running AppImages out of the box, you may need a helper such as
 `AppImageLauncher`. The AppImage is not guaranteed to run on every Linux distribution or desktop environment.
-If it fails to launch, check the troubleshooting steps below and consider the `.deb` or `.rpm` package instead.
+If it fails to launch, check the troubleshooting steps below.
 
 ### Upgrading and uninstalling
 
 - **Windows:** re-run a newer installer to upgrade, or use "Add or remove programs" to uninstall.
-- **Debian/Ubuntu:** `sudo apt install ./<new-version>.deb` to upgrade; `sudo apt remove laurevinerose` to
-  uninstall (confirm the exact package name shown by `apt list --installed | grep laurevine` after installation,
-  as it may differ slightly from the filename).
-- **Fedora/RPM:** `sudo dnf install ./<new-version>.rpm` to upgrade; `sudo dnf remove laurevinerose` to uninstall
-  (confirm the exact package name with `rpm -qa | grep laurevine`).
 - **AppImage:** replace the old `.AppImage` file with the new one; delete the file to uninstall. If you used
   `AppImageLauncher`, also remove the integrated menu entry through that tool.
 
@@ -479,7 +450,7 @@ project-published manifest is the supported integrity check.
 | :--- | :--- | :--- |
 | **Architecture** | x86_64 (64-bit) | All four distribution formats target x86_64; no ARM build is documented. |
 | **Python (source/dev use only)** | 3.10 or later, tested through 3.14 | Stated in the project's own README; not required for packaged installers, which bundle their own runtime. |
-| **Operating systems** | Windows, Debian/Ubuntu-family Linux, Fedora/RPM-family Linux | Matches the four packaged distribution formats. |
+| **Operating systems** | Windows, Linux | Matches the two packaged distribution formats. |
 | **Optional: TeX Live** | `pdflatex`, `xelatex`, `lualatex`, `pgfplots` | Only required for the LaTeX/PGFPlots Studio; all other features work without it. |
 | **Optional: LibreOffice** (`soffice`) | - | Only required for PDF export; native `.pptx` export does not need it. |
 
@@ -505,7 +476,7 @@ functional.
 | NumPy | Numerical computation for figure data | `backend/figures/` | Runtime | `>=1.26.0,<3.0.0` | [numpy.org](https://numpy.org/) |
 | Pandas | Dataset and tabular data processing | `backend/figures/` | Runtime | `>=2.1.0,<4.0.0` | [pandas.pydata.org](https://pandas.pydata.org/) |
 | SciPy | Statistical fitting and distributions for plots | `backend/figures/` | Runtime | `>=1.11.0,<2.0.0` | [scipy.org](https://scipy.org/) |
-| PyMuPDF | Rasterizes compiled LaTeX PDF output to PNG | `backend/figures/` (LaTeX pipeline) | Runtime | `>=1.24.0,<2.0.0` | [pymupdf.readthedocs.io](https://pymupdf.readthedocs.io/) |
+| Poppler (`pdftoppm`, `pdfinfo`) | Rasterizes compiled LaTeX PDF output to PNG | `backend/figures/` (LaTeX pipeline) | Optional runtime (system package) | - | [poppler.freedesktop.org](https://poppler.freedesktop.org/) |
 | python-multipart | Parses multipart form data and CSV uploads | `backend/server.py` | Runtime | `>=0.0.9,<1.0.0` | [PyPI](https://pypi.org/project/python-multipart/) |
 | TeX Live (`pdflatex`/`xelatex`/`lualatex`, `pgfplots`) | Compiles LaTeX/TikZ/PGFPlots figures | LaTeX/PGFPlots Studio | Optional runtime | - | [tug.org/texlive](https://www.tug.org/texlive/) |
 | LibreOffice (`soffice`) | Converts exported presentations to PDF | PDF export pipeline | Optional runtime | - | [libreoffice.org](https://www.libreoffice.org/) |
@@ -546,7 +517,7 @@ declarations rather than assumed.*
        +--------------v---------------+ +-------------v-------------+
        |   Figure codegen & runner    | |   LaTeX compiler pipeline |
        |  - Matplotlib/Seaborn/NumPy  | |  - pdflatex/xelatex/lualatex
-       |  - Isolated subprocesses     | |  - PyMuPDF rasterization   |
+       |  - Isolated subprocesses     | |  - pdftoppm rasterization  |
        +--------------+---------------+ +-------------+-------------+
                       |                               |
                       +---------------+---------------+
@@ -613,9 +584,6 @@ The previous successful render remains visible in a dimmed state instead of disa
 - **AppImage will not launch or shows a permissions error.** Ensure the file is marked executable
   (`chmod +x LaurevineRose-1.0.0-x86_64.AppImage`) and that your filesystem mount supports execution (some
   network or `noexec`-mounted filesystems block this).
-- **Installation fails on Debian/Ubuntu or Fedora/RPM.** Confirm you downloaded the asset matching your
-  distribution family and architecture, and that you are invoking the package manager with a path to the local
-  file (`./package.deb` / `./package.rpm`), not a bare package name.
 - **The application window opens but shows a backend error.** This generally means the bundled local Python
   backend failed to start or bind to a loopback port; check that no other process is holding the port the
   application tried to use, and that your security software is not blocking loopback connections.
@@ -639,14 +607,8 @@ first response to an installation warning. Verify the file's checksum instead.
   untrusted scripts in an isolated environment.
 - **Architecture coverage.** All four packaged distribution formats currently target x86_64 only; no ARM build is
   documented in this snapshot of the project.
-- **Packaging scripts audited.** This snapshot of the repository includes a PyInstaller spec (`run.spec`) for
-  bundling the Python backend. The AppImage build script that previously lived at `scripts/build_appimage.py`
-  has been removed, so building the `.AppImage` yourself from this source tree is not currently supported;
-  dedicated `.deb`/`.rpm` packaging scripts were never present in the audited source and may be produced via
-  standard third-party packaging tooling (for example `dpkg-deb`/`fpm` and `rpmbuild`/`fpm`) from the same build
-  output.
-- **Distribution compatibility is not exhaustively verified.** The Debian/Ubuntu and Fedora/RPM installation
-  commands follow each ecosystem's standard local-package-install convention; broad compatibility across every
+- **Packaging configuration.** This repository includes a PyInstaller specification (`run.spec`) for bundling the Python backend. Refer to this file for the backend packaging configuration. The repository also supports packaging the application as a Linux AppImage. Dedicated `.deb` and `.rpm` packages are not provided.
+- **Distribution compatibility is not exhaustively verified.** Broad compatibility across every
   derivative distribution is not independently confirmed.
 
 ---

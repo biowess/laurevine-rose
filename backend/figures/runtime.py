@@ -32,15 +32,14 @@ PROBE_TIMEOUT_S = 10.0      # isolated interpreter start + importlib lookups
 TOOL_TIMEOUT_S = 5.0        # each `<engine> --version` and `kpsewhich`
 LATEX_TIMEOUT_S = 60        # compile limit, contract s7 (latex.py will use this value)
 TEX_ENGINES = ("pdflatex", "xelatex", "lualatex")
-PACKAGES = ("matplotlib", "numpy", "pandas", "scipy", "pymupdf")
+PACKAGES = ("matplotlib", "numpy", "pandas", "scipy")
 MAX_FONTS = 2000            # longest `fonts` list in the report
 
 # Runs inside the child interpreter. Defines scan() so the same code can also run in-process as a fallback.
 _PROBE_SRC = '''
 import importlib.metadata as md, importlib.util as iu, platform
 _PKGS = {"matplotlib": (("matplotlib",), "matplotlib"), "numpy": (("numpy",), "numpy"),
-         "pandas": (("pandas",), "pandas"), "scipy": (("scipy",), "scipy"),
-         "pymupdf": (("pymupdf", "fitz"), "PyMuPDF")}
+         "pandas": (("pandas",), "pandas"), "scipy": (("scipy",), "scipy")}
 def _version(mods, dist):
     for m in mods:
         try:
@@ -165,7 +164,7 @@ def collect_runtime() -> Dict[str, Any]:
     report.update({p: py.get(p) for p in PACKAGES})
     report.update({
         "tex": {"engines": engines, "kpsewhich": kpse, "pgfplots": pgfplots},
-        "rasterizer": "pymupdf" if report["pymupdf"] else None,
+        "rasterizer": "pdftoppm" if shutil.which("pdftoppm") else None,
         "fonts": fonts,
         "limits": _limits(),
         "platform": {"system": platform.system(), "release": platform.release(), "machine": platform.machine()},

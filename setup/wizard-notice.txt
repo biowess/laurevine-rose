@@ -1,0 +1,18 @@
+Laurevine Rose
+Copyright 2026 Biowess
+
+This software is free and open source. It is licensed under the
+Apache License, Version 2.0, which grants you the right to use,
+study, modify, and redistribute the software.
+
+The Laurevine Rose name, logo, application icon, splash screen,
+and wizard artwork are trademarks of Biowess and are NOT covered
+by the Apache License. See TRADEMARK.md for details.
+
+This software includes third-party open-source components
+(MIT, BSD, Apache-2.0, ISC, LGPL, GPL, and AGPL licensed works).
+Full license texts are available via the "View Third-Party
+Licenses" button below and will be installed in the "licenses"
+folder. The in-app icons are from the Lucide project (ISC).
+
+Click "I Agree" to acknowledge these terms and proceed.

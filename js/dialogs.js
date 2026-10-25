@@ -348,7 +348,7 @@
     U.dialog({ title: which === 'present' ? 'Present mode shortcuts' : 'Keyboard shortcuts', icon: 'keyboard', width: 520, dismiss: 'backdrop', body: h('table', { class: 'ktable' }, h('tbody', null, rows)), buttons: [{ label: 'Close', kind: 'primary' }] });
   }
   function about() {
-    U.dialog({ title: 'About', icon: 'info', width: 460, dismiss: 'backdrop', body: h('div', { class: 'stack' }, h('p', { class: 'dlg__text' }, 'Research presentation editor — version 1.1.0.'), h('p', { class: 'dlg__text dlg__text--muted' }, 'Pure HTML, CSS and JavaScript. Figures, LaTeX/PGFPlots compilation and PPTX/PDF export run in the local Python service (python3 run.py); without it those commands tell you how to start it.'), h('p', { class: 'dlg__text dlg__text--muted' }, 'Icons: Lucide (ISC). Typeface: Spline Sans (SIL Open Font License).')), buttons: [{ label: 'Close', kind: 'primary' }] });
+    U.dialog({ title: 'About', icon: 'info', width: 460, dismiss: 'backdrop', body: h('div', { class: 'stack' }, h('p', { class: 'dlg__text' }, 'Laurevine Rose - version 1.0.0.'), h('p', { class: 'dlg__text dlg__text--muted' }, 'Pure HTML, CSS and JavaScript. Figures, LaTeX/PGFPlots compilation and PPTX/PDF export run in the local Python service (python3 run.py); without it those commands tell you how to start it.'), h('p', { class: 'dlg__text dlg__text--muted' }, 'Icons: Lucide (ISC). Typeface: Spline Sans (SIL Open Font License).')), buttons: [{ label: 'Close', kind: 'primary' }] });
   }
 
   /* ================= comments popover ================= */

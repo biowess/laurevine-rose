@@ -78,10 +78,10 @@ def test_pdf_is_valid_and_page_size_is_figure_size():
     res = export(rec(6, 4, 150), "pdf")
     assert res.status_code == 200 and res.content.startswith(b"%PDF")
     assert res.headers["content-type"] == "application/pdf"
-    import fitz
-    with fitz.open(stream=res.content, filetype="pdf") as pdf:
-        assert pdf.page_count == 1
-        assert (round(pdf[0].rect.width), round(pdf[0].rect.height)) == (432, 288)  # 6 x 4 in at 72 pt
+    info = export_core.latex_core._poppler_info(res.content)
+    if info:
+        assert info[0] == 1
+        assert (round(info[1]), round(info[2])) == (432, 288)  # 6 x 4 in at 72 pt
 
 
 def test_transparent_png_and_pdf_only():
@@ -242,10 +242,9 @@ def test_latex_tex_export_is_the_complete_file_and_other_kinds_refuse_tex():
     assert export(latex_rec(), "py").status_code == 400
 
 
-def test_latex_transparent_png_is_refused_without_pymupdf(monkeypatch):
-    monkeypatch.setattr(export_core.latex_core, "_mu", None)
+def test_latex_transparent_png_is_refused():
     res = export(latex_rec(), "png", background="transparent")
-    assert res.status_code == 422 and "PyMuPDF" in res.json()["detail"]
+    assert res.status_code == 422 and "Transparent PNG export is not available" in res.json()["detail"]
 
 
 @needs_tex

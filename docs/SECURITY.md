@@ -1,6 +1,6 @@
 # Security and trust model
 
-Research Presentation Editor runs on your computer and can run code you or a file give it: Python scripts (figures), TeX
+Laurevine Rose runs on your computer and can run code you or a file give it: Python scripts (figures), TeX
 documents (LaTeX figures) and LibreOffice (PDF export). This page says what protects you and what does not.
 
 **Short version: the Python and LaTeX windows are not a sandbox. A script runs with your user's permissions. Only run code

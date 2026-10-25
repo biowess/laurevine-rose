@@ -183,8 +183,8 @@ def test_pdf_size_cap(monkeypatch):
 
 
 @pytest.mark.skipif(shutil.which("pdftoppm") is None, reason="pdftoppm not installed")
-def test_pdftoppm_fallback(monkeypatch):
-    monkeypatch.setattr(latex, "_mu", None)
+def test_pdftoppm_is_the_sole_rasterizer():
+    """pdftoppm is the only supported rasterizer after PyMuPDF removal."""
     pdf = make_pdf(2, 1)
     ras = latex.rasterize_pdf(pdf, 100)
     assert ras["rasterizer"] == "pdftoppm" and (ras["widthPx"], ras["heightPx"]) == (200, 100)
@@ -197,7 +197,6 @@ def test_pdftoppm_fallback(monkeypatch):
 def test_no_rasterizer_is_render_failed_but_keeps_pdf(monkeypatch):
     pdf = make_pdf()
     monkeypatch.setattr(latex, "compile_latex", lambda *a, **k: latex.CompileResult("ok", pdf=pdf, pages=1))
-    monkeypatch.setattr(latex, "_mu", None)
     monkeypatch.setattr(latex.shutil, "which", lambda n: None)
     r = post(COMPILE, source=DOC)
     assert r["status"] == "render_failed" and r["ok"] is False and r["preview"] is None
@@ -369,21 +368,23 @@ def test_final_pixel_width_is_inches_times_dpi_and_native_uses_the_page_size():
     assert (r["widthPx"], r["heightPx"]) == (1200, 800)
 
 
-def test_background_value_is_checked_and_transparent_needs_pymupdf(monkeypatch):
+def test_background_value_is_checked_and_transparent_always_rejected(monkeypatch):
     pdf64 = base64.b64encode(make_pdf(2, 1)).decode()
     assert client.post(RENDER, json={"pdfBase64": pdf64, "background": "red"}).status_code == 400
-    monkeypatch.setattr(latex, "_mu", None)                              # poppler fallback: no alpha, so no transparent PNG
+    # Transparent is always refused: pdftoppm draws on white; PyMuPDF has been removed
     r = post(RENDER, pdfBase64=pdf64, dpi=100, background="transparent")
-    assert not r["ok"] and r["status"] == "render_failed" and "PyMuPDF" in r["message"] and r["preview"] is None
+    assert not r["ok"] and r["status"] == "render_failed" and r["preview"] is None
+    assert "Transparent" in r["message"] or "transparent" in r["message"]
     assert post(RENDER, pdfBase64=pdf64, dpi=100, background="white")["ok"]
 
 
-@pytest.mark.skipif(not latex.alpha_supported(), reason="PyMuPDF not installed")
-def test_transparent_png_keeps_alpha_and_white_stays_opaque():
+@pytest.mark.skipif(shutil.which("pdftoppm") is None, reason="pdftoppm not installed")
+def test_white_background_renders_opaque_via_pdftoppm():
+    """Transparent PNG was only available via PyMuPDF (now removed); white renders correctly via pdftoppm."""
     pdf64 = base64.b64encode(make_pdf(2, 1)).decode()
-    t = Image.open(io.BytesIO(base64.b64decode(post(RENDER, pdfBase64=pdf64, dpi=100, background="transparent")["preview"].split(",", 1)[1])))
-    assert t.mode == "RGBA" and t.getpixel((0, 0))[3] == 0
-    assert png_of(post(RENDER, pdfBase64=pdf64, dpi=100)["preview"]).getpixel((0, 0)) == (255, 255, 255)
+    assert not latex.alpha_supported()          # always False after PyMuPDF removal
+    img = png_of(post(RENDER, pdfBase64=pdf64, dpi=100)["preview"])
+    assert img.getpixel((0, 0)) == (255, 255, 255)   # white background
 
 
 def test_latex_settings_new_fields_validate():

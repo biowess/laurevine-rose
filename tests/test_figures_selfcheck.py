@@ -8,7 +8,7 @@ from backend.figures.selfcheck import format_report_text, run_selfcheck, main
 
 def test_run_selfcheck_structure():
     report, actionable = run_selfcheck()
-    assert report["version"] == "1.1.0"
+    assert report["version"] == "1.0.0"
     assert "python" in report
     assert "dependencies" in report
     assert "runtime" in report
@@ -16,7 +16,7 @@ def test_run_selfcheck_structure():
     assert isinstance(actionable, list)
 
     text = format_report_text(report)
-    assert "Research Presentation Editor v1.1.0 — Runtime Self-Check" in text
+    assert "Laurevine Rose v1.0.0 — Runtime Self-Check" in text
     assert "Core Python Packages" in text
     assert "Presentation & PDF Export Engines" in text
 
@@ -30,10 +30,10 @@ def test_selfcheck_main(monkeypatch):
 def test_selfcheck_cli():
     res = subprocess.run([sys.executable, "-m", "backend.figures.selfcheck"], capture_output=True, text=True)
     assert res.returncode == 0
-    assert "Research Presentation Editor v1.1.0" in res.stdout
+    assert "Laurevine Rose v1.0.0" in res.stdout
 
     res_json = subprocess.run([sys.executable, "-m", "backend.figures.selfcheck", "--json"], capture_output=True, text=True)
     assert res_json.returncode == 0
     data = json.loads(res_json.stdout)
-    assert data["version"] == "1.1.0"
+    assert data["version"] == "1.0.0"
     assert "dependencies" in data

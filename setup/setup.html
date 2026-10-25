@@ -36,10 +36,14 @@
         </section>
 
         <section class="step step--license" data-step="license" aria-labelledby="licenseTitle" hidden>
-          <h1 class="step__title step__title--sm" id="licenseTitle" tabindex="-1">License Agreement</h1>
-          <p class="step__intro">Please read the agreement below, then confirm that you accept it to continue.</p>
-          <pre class="license" id="licenseText" role="region" tabindex="0" aria-label="Software license agreement text. Scroll to read the full agreement."></pre>
-          <label class="check"><input type="checkbox" id="licenseAgree" disabled><span>I have read and accept the license agreement</span></label>
+          <h1 class="step__title step__title--sm" id="licenseTitle" tabindex="-1">License</h1>
+          <p class="step__intro">Please read the notice below, then click &ldquo;I Agree&rdquo; to continue.</p>
+          <pre class="license" id="licenseText" role="region" tabindex="0" aria-label="License notice. Scroll to read the full notice."></pre>
+          <div class="legal-links" role="group" aria-label="Legal documents">
+            <button type="button" class="btn btn--sm" data-doc="apache">Apache License</button>
+            <button type="button" class="btn btn--sm" data-doc="trademark">Trademark</button>
+            <button type="button" class="btn btn--sm" data-doc="notices">Third-Party Notices</button>
+          </div>
           <p class="step__msg" id="licenseMsg" hidden></p>
         </section>
 

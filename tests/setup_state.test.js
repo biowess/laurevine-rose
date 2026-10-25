@@ -103,16 +103,17 @@ test('decline leaves state incomplete and untouched', () => {
   assert.ok(!/save\(|acceptLicense|markComplete|setupComplete|writeFile/.test(block));
 });
 
-test('license text and version come from files; text ends with the end marker', () => {
+test('license text and version come from files; wizard notice ends with the I Agree line', () => {
   const root = path.join(__dirname, '..');
   const v = S.readLicenseVersion(path.join(root, 'setup', 'license.json'));
   assert.ok(v && typeof v === 'string');
-  const t = S.readLicenseText(path.join(root, 'LICENSE.txt'));
+  const t = S.readLicenseText(path.join(root, 'setup', 'wizard-notice.txt'));
   assert.strictEqual(t.ok, true);
-  assert.ok(t.text.trimEnd().endsWith('End of License Agreement'));
+  assert.ok(t.text.trimEnd().endsWith('and proceed.'));
+  assert.ok(/Apache License, Version 2\.0/.test(S.readLicenseText(path.join(root, 'LICENSE.txt')).text));
   assert.strictEqual(S.readLicenseText(path.join(root, 'nope.txt')).ok, false);
   assert.strictEqual(S.readLicenseVersion(path.join(root, 'nope.json')), null);
-  assert.ok(!/End of License Agreement/.test(fs.readFileSync(path.join(root, 'setup', 'setup.html'), 'utf8')), 'license must not be hard-coded in HTML');
+  assert.ok(!/Click "I Agree"/.test(fs.readFileSync(path.join(root, 'setup', 'setup.html'), 'utf8')), 'license must not be hard-coded in HTML');
 });
 
 test('pdfSkipped is persisted and normalized', () => {

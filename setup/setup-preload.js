@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('setupAPI', {
   getInfo: () => ipcRenderer.invoke('setup:get-info'),
   getLicense: () => ipcRenderer.invoke('setup:get-license'),
+  getDoc: (key) => ipcRenderer.invoke('setup:get-doc', key),
   getState: () => ipcRenderer.invoke('setup:get-state'),
   acceptLicense: () => ipcRenderer.invoke('setup:accept-license'),
   decline: () => ipcRenderer.invoke('setup:decline'),
@@ -29,6 +30,7 @@ contextBridge.exposeInMainWorld('setupAPI', {
 contextBridge.exposeInMainWorld('repairAPI', {
   getInfo: () => ipcRenderer.invoke('repair:get-info'),
   getLicense: () => ipcRenderer.invoke('repair:get-license'),
+  getDoc: (key) => ipcRenderer.invoke('repair:get-doc', key),
   checkComponents: () => ipcRenderer.invoke('repair:check-components'),
   getManifestInfo: () => ipcRenderer.invoke('repair:get-manifest-info'),
   installLibreOffice: () => ipcRenderer.invoke('repair:install-libreoffice'),

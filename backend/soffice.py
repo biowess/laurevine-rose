@@ -160,8 +160,12 @@ def parse_version(text: str) -> Optional[Tuple[int, ...]]:
 
 
 def probe(path: str) -> Dict[str, Any]:
-    """Run `<path> --version` (20 s timeout). -> {path, compatible, version, reason}; reason is None when compatible."""
-    res: Dict[str, Any] = {"path": path, "compatible": False, "version": None, "reason": None}
+    """Run `<path> --version` (20 s timeout). -> {path, compatible, version, reason}.
+    `compatible` is True when a parsed version meets MIN_VERSION, False when a parsed version
+    is genuinely below it, and None when compatibility could not be established at all (e.g.
+    the command errored, timed out, or produced no readable version text) -- a failed command
+    is not by itself evidence of incompatibility, especially if it still printed a version."""
+    res: Dict[str, Any] = {"path": path, "compatible": None, "version": None, "reason": None}
     if not _is_executable(path):
         res["reason"] = "The file does not exist or is not executable."
         return res
@@ -174,15 +178,18 @@ def probe(path: str) -> Dict[str, Any]:
         res["reason"] = f"It could not be started ({exc.__class__.__name__})."
         return res
     out = (proc.stdout or b"").decode(errors="replace").strip() or (proc.stderr or b"").decode(errors="replace").strip()
-    if proc.returncode != 0:
-        res["reason"] = f"`--version` failed (exit code {proc.returncode})."
-        return res
     ver = parse_version(out)
     if not ver:
-        res["reason"] = "Its version could not be read, so it cannot be confirmed as LibreOffice."
+        # Parse first: a nonzero exit code alone doesn't mean incompatible, only that we
+        # couldn't confirm either way -- so it's reported as unknown, not incompatible.
+        if proc.returncode != 0:
+            res["reason"] = f"`--version` failed (exit code {proc.returncode}) and no version number could be read from its output."
+        else:
+            res["reason"] = "Its version could not be read, so it cannot be confirmed as LibreOffice."
         return res
     res["version"] = ".".join(str(n) for n in ver)
     if ver[:2] < MIN_VERSION:
+        res["compatible"] = False
         res["reason"] = f"Version {res['version']} is older than the minimum supported version {MIN_VERSION[0]}.{MIN_VERSION[1]}."
         return res
     res["compatible"] = True
@@ -190,7 +197,9 @@ def probe(path: str) -> Dict[str, Any]:
 
 
 def detect() -> Dict[str, Any]:
-    """Locate and probe. -> {status: found|incompatible|missing, source, path, version, reason, minVersion, checkedAt}."""
+    """Locate and probe. -> {status: found|incompatible|unknown|missing, source, path, version, reason, minVersion, checkedAt}.
+    status is 'unknown' when an executable was located but its compatibility could not be
+    established (distinct from 'incompatible', which means a version was read and it is too old)."""
     out: Dict[str, Any] = {
         "status": "missing", "source": None, "path": None, "version": None, "reason": None,
         "minVersion": f"{MIN_VERSION[0]}.{MIN_VERSION[1]}",
@@ -201,8 +210,8 @@ def detect() -> Dict[str, Any]:
         return out
     source, path = hit
     p = probe(path)
-    out.update(source=source, path=path, version=p["version"], reason=p["reason"],
-               status="found" if p["compatible"] else "incompatible")
+    status = "found" if p["compatible"] is True else "incompatible" if p["compatible"] is False else "unknown"
+    out.update(source=source, path=path, version=p["version"], reason=p["reason"], status=status)
     return out
 
 

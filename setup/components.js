@@ -141,6 +141,12 @@ function officeItem(res) {
   if (det.status === 'incompatible') {
     return Object.assign(item, { status: 'info', statusText: 'Found, not compatible', detail: det.path + ver + '. ' + (det.reason || 'This version cannot be used.') + ' Presentation PDF export is unavailable; PowerPoint export works normally.' });
   }
+  if (det.status === 'unknown') {
+    // Executable was located but its version couldn't be confirmed (e.g. `--version` timed out or
+    // printed something unparseable). Export itself only needs the executable to be found, not a
+    // confirmed version, so this is very likely still usable -- distinct from a genuinely missing install.
+    return Object.assign(item, { status: 'info', statusText: 'Found, version unconfirmed', detail: det.path + '. ' + (det.reason || 'Its version could not be confirmed.') + ' PDF export will likely still work; PowerPoint export works normally.' });
+  }
   return Object.assign(item, { status: 'info', statusText: 'Not found', detail: 'Presentation PDF export is unavailable; PowerPoint export works normally.' });
 }
 

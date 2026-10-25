@@ -109,7 +109,7 @@
     const w = g && (g.pageWIn || (g.widthPx && g.dpi ? g.widthPx / g.dpi : 0)), hh = g && (g.pageHIn || (g.heightPx && g.dpi ? g.heightPx / g.dpi : 0));
     return w > 0 && hh > 0 ? F.exportpanel.fitPage(w, hh, o.native, o.wIn, o.dpi) : null;
   };
-  L.bgState = (rt) => (rt && rt.rasterizer === 'pymupdf' ? { ok: true, reason: '' } : { ok: false, reason: 'A transparent PNG needs PyMuPDF, which was not found; the fallback rasterizer draws on white.' });
+  L.bgState = (_rt) => ({ ok: false, reason: 'Transparent PNG is not available for LaTeX figures: the rasterizer (pdftoppm) always renders on a white background. Export as PDF for a vector format.' });
   /* last compile summary kept in the record */
   L.summary = (res, at) => ({ engine: res.engine || 'pdflatex', pages: res.pages || null, passes: res.passes || 0, overfull: res.overfull || 0, durationMs: res.durationMs == null ? null : Math.round(res.durationMs), at,
     pageWIn: res.widthPx && res.dpi ? Math.round(res.widthPx / res.dpi * 1000) / 1000 : null, pageHIn: res.heightPx && res.dpi ? Math.round(res.heightPx / res.dpi * 1000) / 1000 : null });

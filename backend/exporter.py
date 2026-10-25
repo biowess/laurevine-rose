@@ -1,4 +1,4 @@
-"""PowerPoint (.pptx) Exporter for Research Presentation Editor.
+"""PowerPoint (.pptx) Exporter for Laurevine Rose.
 
 Transforms the canonical presentation document model into a native, fully editable
 PowerPoint presentation using python-pptx.
@@ -2154,6 +2154,20 @@ def _make_placeholder(shape: Any, ph_type: str, idx: int, name: str) -> None:
     shape.name = name
 
 
+def _on_accent(resolver: ThemeResolver) -> str:
+    """On-accent text colour (palette token, else black/white by accent luminance: same rule as js layouts.tokens)."""
+    th = resolver.theme
+    v = th.get("onAccent") or th.get("onaccent")
+    if v:
+        return v
+    acc = str(th.get("accent") or "#000000").lstrip("#")
+    try:
+        r, g, b = (int(acc[i : i + 2], 16) / 255 for i in (0, 2, 4))
+    except ValueError:
+        return "#FFFFFF"
+    return "#111111" if (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.5 else "#FFFFFF"
+
+
 def export_header_footer(slide: Any, slide_model: SlideModel, doc: PresentationDoc, resolver: ThemeResolver) -> None:
     """Header and footer of one slide, behind the slide objects (same z-order as the editor).
 
@@ -2162,7 +2176,7 @@ def export_header_footer(slide: Any, slide_model: SlideModel, doc: PresentationD
     named "Header" at the header region. Nothing is emitted for a region without text (no empty placeholders).
     """
     for key in hfmod.KEYS:
-        d = hfmod.view(doc, slide_model, key)
+        d = hfmod.view(doc, slide_model, key, _on_accent(resolver))
         if not d:
             continue
         shape = export_textbox(slide, SlideObject(**d), resolver)
@@ -2172,11 +2186,11 @@ def export_header_footer(slide: Any, slide_model: SlideModel, doc: PresentationD
             shape.name = "Header"
 
 
-def _slidenum_paragraph(p: Any, doc: PresentationDoc, resolver: ThemeResolver, text: str, static: bool) -> None:
+def _slidenum_paragraph(p: Any, doc: PresentationDoc, resolver: ThemeResolver, text: str, static: bool, slide_model: Any = None) -> None:
     """Fills paragraph ``p`` with the slide-number text: a native ``slidenum`` field (cached value ``text``), or a plain run when
     ``static`` (PDF path: LibreOffice ignores ``firstSlideNum``, so the computed value is baked in). Style comes from doc.hf.numberItem
     (defaults: body font, 12pt, muted, right aligned) and is identical on slides, layout and master placeholders."""
-    st = hfmod.number_style(doc)
+    st = hfmod.number_style(doc, slide_model, _on_accent(resolver))
     for child in list(p):
         p.remove(child)
     algn = {"left": "l", "center": "ctr", "right": "r"}.get(st["align"], "r")
@@ -2223,7 +2237,7 @@ def export_slide_number(
     tf.auto_size = MSO_AUTO_SIZE.NONE
     tf.vertical_anchor = MSO_ANCHOR.BOTTOM
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-    _slidenum_paragraph(tf._txBody.p_lst[0], doc, resolver, str(number), static)
+    _slidenum_paragraph(tf._txBody.p_lst[0], doc, resolver, str(number), static, slide_model)
     _make_placeholder(shape, "sldNum", 12, "Slide Number Placeholder")
 
 
@@ -2318,16 +2332,25 @@ def export_presentation(
         # Export theme decoration if enabled
         export_theme_decor(slide, slide_model, doc, resolver)
 
-        # Header / footer / slide number sit behind the slide objects (matches the editor)
-        export_header_footer(slide, slide_model, doc, resolver)
-        export_slide_number(slide, slide_model, doc, resolver, hfmod.number_value(doc, slide_idx), static_numbers)
-
         # Export speaker notes if present
         if slide_model.notes and slide_model.notes.strip():
             slide.notes_slide.notes_text_frame.text = slide_model.notes.strip()
 
+        # Header / footer / slide number sit behind the slide objects (matches the editor) but above a full-bleed backdrop
+        # shape (Section / Quote), which would otherwise cover them: emitted right after it.
+        bd_idx = hfmod.backdrop(doc, slide_model)[0]
+
+        def emit_hf(slide=slide, slide_model=slide_model, slide_idx=slide_idx) -> None:
+            export_header_footer(slide, slide_model, doc, resolver)
+            export_slide_number(slide, slide_model, doc, resolver, hfmod.number_value(doc, slide_idx), static_numbers)
+
+        if bd_idx < 0:
+            emit_hf()
+
         # Export objects in strict back-to-front array order
-        for obj in slide_model.objects:
+        for obj_idx, obj in enumerate(slide_model.objects):
+            if obj_idx == bd_idx + 1 and bd_idx >= 0:
+                emit_hf()
             obj_type = (obj.type or "").lower()
             if obj_type == "text":
                 export_textbox(slide, obj, resolver)
@@ -2339,6 +2362,8 @@ def export_presentation(
                 export_table(slide, obj, resolver, slide_model=slide_model)
             elif obj_type in ("plot", "figure"):
                 export_figure_picture(slide, obj, resolver, warnings, slide_idx + 1)
+        if bd_idx >= 0 and bd_idx == len(slide_model.objects) - 1:
+            emit_hf()   # backdrop is the last object: nothing above it to interleave with
 
     target_stream = output if isinstance(output, io.BytesIO) else io.BytesIO()
     prs.save(target_stream)
@@ -2405,6 +2430,17 @@ def export_presentation_to_pdf(
         env = os.environ.copy()
         env.update(env_vars)
 
+        # On Linux, PyInstaller's bootloader points LD_LIBRARY_PATH at its own bundled libs so the
+        # packaged engine's Python extensions resolve correctly. soffice must NOT inherit that: its
+        # loader would then pick up the bundle's (often older) libstdc++/libgcc ahead of the system
+        # ones it was actually built against, e.g. "GLIBCXX_3.4.29 not found". PyInstaller saves the
+        # pre-bootloader value (if any) in LD_LIBRARY_PATH_ORIG for exactly this case; restore it, or
+        # drop the var entirely if there wasn't one, before launching the external soffice process.
+        if "LD_LIBRARY_PATH_ORIG" in env:
+            env["LD_LIBRARY_PATH"] = env["LD_LIBRARY_PATH_ORIG"]
+        else:
+            env.pop("LD_LIBRARY_PATH", None)
+
         cmd = [
             soffice_path,
             f"-env:UserInstallation={path_to_uri(user_dir)}",
@@ -2460,4 +2496,3 @@ if __name__ == "__main__":
     else:
         export_presentation(data, out_path)
     print(f"Successfully exported {json_path} to {out_path}")
-

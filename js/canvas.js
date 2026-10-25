@@ -1702,6 +1702,7 @@
     }
     else if (o.type === 'table') { const td = e.target.closest('td,th'); if (td) editCell(td); }
     else if (o.type === 'plot' || o.type === 'figure') RPE.commands.run('plot.edit', {}, 'dblclick');
+    else if (o.type === 'image' && o.latex) RPE.commands.run('equation.edit', { obj: o }, 'dblclick');
     else if (o.type === 'image') RPE.commands.run('picture.replace', {}, 'dblclick');
   }
   function objectMenu(x, y, onObject) {
@@ -1709,6 +1710,8 @@
     const items = [];
     if (onObject) {
       items.push(M('Cut', 'clip.cut', null, { icon: 'scissors', shortcut: 'Ctrl+X' }), M('Copy', 'clip.copy', null, { icon: 'copy', shortcut: 'Ctrl+C' }), M('Paste', 'clip.paste', null, { icon: 'clipboard-paste', shortcut: 'Ctrl+V' }), M('Duplicate', 'object.duplicate', null, { icon: 'copy-plus', shortcut: 'Ctrl+D' }), M('Delete', 'object.delete', null, { icon: 'trash-2', shortcut: 'Del' }), { sep: true });
+      const activeObj = sel()[0];
+      if (activeObj && activeObj.type === 'image' && activeObj.latex) items.push(M('Edit Equation…', 'equation.edit', { obj: activeObj }, { icon: 'sigma' }), { sep: true });
       if (kind === 'plot') items.push(M('Edit Plot…', 'plot.edit', null, { icon: 'chart-line' }), M('Python Source…', 'fig.pythonSource', null, { icon: 'terminal' }), M('Add Caption', 'caption.add', null, { icon: 'captions' }), { sep: true });
       else if (kind === 'text' || kind === 'shape') items.push(M('Edit Text', 'text.edit', null, { icon: 'pencil-line' }), { sep: true });
       else if (kind === 'image' || kind === 'table') items.push(M('Add Caption', 'caption.add', null, { icon: 'captions' }), { sep: true });

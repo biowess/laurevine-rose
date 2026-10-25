@@ -114,7 +114,7 @@ Compile standalone LaTeX snippets, TikZ diagrams, and PGFPlots charts directly i
    - **xelatex**: Unicode and system TrueType/OpenType font support via `fontspec`.
    - **lualatex**: Modern LuaTeX engine with extended TeX memory and Lua scripting.
 4. Click **Compile** (`Ctrl + Enter`).
-   - The engine compiles the document, produces a PDF, and rasterizes it to high-resolution PNG using PyMuPDF.
+   - The engine compiles the document, produces a PDF, and rasterizes it to high-resolution PNG using Poppler's `pdftoppm`.
    - If compilation warnings or errors occur, the log viewer highlights the offending lines with line-number jumps.
 5. Export & Insert:
    - Download the standalone `.tex` document or `.pdf` file.

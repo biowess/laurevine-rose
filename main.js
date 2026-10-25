@@ -11,17 +11,26 @@ let splashWindow = null;
 let setupWindow = null;
 let pythonProcess = null;
 let serverPort = null;
+let isClosing = false;
 
 const APP_DIR = __dirname;
 const ICON_PATH = path.join(APP_DIR, 'Assets', 'appicon.png');
 
 const fs = require('fs');
 const APP_VERSION = require('./package.json').version;
-const LICENSE_TXT = app.isPackaged
-  ? (fs.existsSync(path.join(process.resourcesPath, 'LICENSE.txt'))
-      ? path.join(process.resourcesPath, 'LICENSE.txt')
-      : path.join(APP_DIR, 'LICENSE.txt'))
-  : path.join(APP_DIR, 'LICENSE.txt');
+// Text shown on the wizard's license step (the Apache-2.0 notice). The full legal documents are served by readLegalDoc().
+const LICENSE_TXT = path.join(APP_DIR, 'setup', 'wizard-notice.txt');
+// Legal documents behind the "Apache License" / "Trademark" / "Third-Party Notices" buttons (wizard, repair wizard, File > About).
+const LEGAL_DOCS = { apache: 'LICENSE.txt', trademark: 'TRADEMARK.md', notices: 'THIRD_PARTY_NOTICES.txt' };
+function readLegalDoc(key) {
+  if (typeof key !== 'string' || !Object.prototype.hasOwnProperty.call(LEGAL_DOCS, key)) return { ok: false, error: 'Unknown document.' };
+  const f = LEGAL_DOCS[key];
+  // packaged: <resources>/ (extraResources) first, then inside the app bundle, then next to the executable; dev: the repo root
+  const dirs = [app.isPackaged ? process.resourcesPath : null, APP_DIR, app.getAppPath(), path.dirname(process.execPath)].filter(Boolean);
+  const hit = dirs.map((d) => path.join(d, f)).find((p) => { try { return fs.statSync(p).isFile(); } catch (e) { return false; } });
+  if (!hit) return { ok: false, error: f + ' was not found in the installation. Reinstall Laurevine Rose, or add ' + f + ' to the package (build.files / extraResources).' };
+  return setupState.readLicenseText(hit);
+}
 const LICENSE_VERSION = setupState.readLicenseVersion(path.join(APP_DIR, 'setup', 'license.json'));
 const FORCE_SETUP = process.argv.includes('--setup') || process.env.LAUREVINE_FORCE_SETUP === '1';
 
@@ -299,6 +308,26 @@ function createMainWindow(port) {
     }
   });
 
+  mainWindow.on('close', (event) => {
+    if (isClosing) {
+      return;
+    }
+    event.preventDefault();
+    try {
+      if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents && !mainWindow.webContents.isDestroyed()) {
+        mainWindow.webContents.send('app:request-close');
+      } else {
+        isClosing = true;
+        mainWindow.close();
+      }
+    } catch (_) {
+      isClosing = true;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.close();
+      }
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
     cleanup();
@@ -315,6 +344,10 @@ function cleanup() {
   }
 }
 
+process.on('exit', () => {
+  cleanup();
+});
+
 ipcMain.on('window-control', (_event, action) => {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   if (action === 'minimize') {
@@ -326,6 +359,9 @@ ipcMain.on('window-control', (_event, action) => {
       mainWindow.maximize();
     }
   } else if (action === 'close') {
+    mainWindow.close();
+  } else if (action === 'force-close') {
+    isClosing = true;
     mainWindow.close();
   }
 });
@@ -355,8 +391,12 @@ function friendlyInstallError(code, message) {
       officialUrl: 'https://www.libreoffice.org/download/download-libreoffice/'
     };
   }
-  if (code === 'NETWORK' || code === 'HTTP_STATUS' || code === 'TLS' || code === 'REDIRECT_BLOCKED') {
+  if (code === 'NETWORK') {
     return { friendlyText: "Setup couldn't finish downloading LibreOffice. Check your internet connection and try again." };
+  }
+  // Server / TLS / redirect problems are not "no internet": show the installer's specific message instead of blaming the connection.
+  if ((code === 'HTTP_STATUS' || code === 'TLS' || code === 'REDIRECT_BLOCKED') && message) {
+    return { friendlyText: message };
   }
   if (code === 'HASH_MISMATCH' || code === 'SIZE_MISMATCH') {
     return { friendlyText: 'The downloaded file could not be verified (checksum mismatch). The download may be corrupted.' };
@@ -528,6 +568,16 @@ ipcMain.handle('setup:get-info', (event) => {
 ipcMain.handle('setup:get-license', (event) => {
   if (!isSetupSender(event)) return null;
   return setupState.readLicenseText(LICENSE_TXT);
+});
+
+ipcMain.handle('setup:get-doc', (event, key) => {
+  if (!isSetupSender(event)) return null;
+  return readLegalDoc(key);
+});
+
+ipcMain.handle('app:get-legal-doc', (event, key) => {
+  if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) return null;
+  return readLegalDoc(key);
 });
 
 ipcMain.handle('setup:get-state', (event) => {
@@ -1055,6 +1105,11 @@ ipcMain.handle('repair:get-license', (event) => {
   return setupState.readLicenseText(LICENSE_TXT);
 });
 
+ipcMain.handle('repair:get-doc', (event, key) => {
+  if (!isRepairSender(event)) return null;
+  return readLegalDoc(key);
+});
+
 ipcMain.handle('repair:get-manifest-info', (event) => {
   if (!isRepairSender(event)) return null;
   const key = installer.platformKey(process.platform, process.arch);
@@ -1096,9 +1151,15 @@ app.on('window-all-closed', () => {
   app.quit();
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', (event) => {
+  if (!isClosing && mainWindow && !mainWindow.isDestroyed()) {
+    // Attempting to quit: let mainWindow close event prompt user if needed.
+    // Do not kill backend process prematurely.
+    return;
+  }
   cleanup();
 });
+
 
 app.whenReady().then(async () => {
   if (!gotSetupLock) return;

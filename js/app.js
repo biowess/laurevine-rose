@@ -12,7 +12,7 @@
   const SAVE_TEXT = { new: 'Not saved yet', dirty: 'Unsaved changes', saved: 'Saved to this browser', opened: 'Opened from file', failed: 'Not saved: download a copy' };
   function updateTitle() {
     $('#docTitleText').textContent = S.doc.title; $('#docTitle').setAttribute('aria-label', `Presentation name: ${S.doc.title}. Click to rename.`);
-    document.title = `${S.doc.title} — Research Presentation Editor`;
+    document.title = `${S.doc.title} — Laurevine Rose`;
     const st = $('#saveState'); st.dataset.state = ui.saveState; $('#saveStateText').textContent = SAVE_TEXT[ui.saveState] || '';
   }
   function renameStart() {
@@ -78,8 +78,8 @@
     const saved = ui.localInfo, wrap = h('div', { class: 'bs-panel' });
     /* page title + description come from RPE.backstageMeta; append() would print a literal "null" for a null child, so only real nodes are appended */
     const meta = RPE.backstageMeta.page(id), head = () => wrap.append(...[h('h2', null, meta.title), meta.desc ? h('p', { class: 'bs-lead' }, meta.desc) : null].filter(Boolean));
-    if (id === 'new') { head(); wrap.append(h('div', { class: 'bs-cards' }, bsBtn('presentation', 'Blank presentation', 'One title slide, widescreen 16:9', 'file.new', {}), bsBtn('flask-conical', 'Sample research deck', 'Eight demo slides with plots and a multi-panel figure', 'file.new', { sample: true }))); }
-    else if (id === 'open') { head(); wrap.append(h('div', { class: 'bs-cards' }, bsBtn('folder-open', 'Open project file…', 'A .rpe.json file downloaded with "Download project"', 'file.openFile'), bsBtn('hard-drive', 'Copy saved in this browser', saved ? 'Saved ' + new Date(saved.savedAt).toLocaleString() : 'Nothing saved yet', 'file.openLocal', null, !saved)), h('p', { class: 'bs-note' }, 'Project files contain every figure image and keep figures linked to their data and settings.')); }
+    if (id === 'new') { head(); wrap.append(h('div', { class: 'bs-cards' }, bsBtn('presentation', 'Blank presentation', 'One title slide, widescreen 16:9', 'file.new', {}), bsBtn('flask-conical', 'Sample research deck', 'Eight demo slides with plots and a multi-panel figure', 'file.new', { sample: true }), bsBtn('file-up', 'Import PowerPoint (.pptx)…', 'Convert an existing PowerPoint file into an editable presentation', 'file.importPptx', {}))); }
+    else if (id === 'open') { head(); wrap.append(h('div', { class: 'bs-cards' }, bsBtn('folder-open', 'Open project file…', 'A .rpe.json file downloaded with "Download project"', 'file.openFile'), bsBtn('file-up', 'Import PowerPoint (.pptx)…', 'Convert a PowerPoint presentation into an editable deck', 'file.importPptx'), bsBtn('hard-drive', 'Copy saved in this browser', saved ? 'Saved ' + new Date(saved.savedAt).toLocaleString() : 'Nothing saved yet', 'file.openLocal', null, !saved)), h('p', { class: 'bs-note' }, 'Project files contain every figure image and keep figures linked to their data and settings.')); }
     else if (id === 'save') { head(); wrap.append(h('div', { class: 'bs-cards' }, bsBtn('save', 'Save to this browser', 'Stored in this browser (IndexedDB), figures included. Ctrl+S', 'file.save'), bsBtn('download', 'Download project (.json)', 'A real file you can open again here', 'file.exportJson'), bsBtn('cloud-upload', 'Save to server', 'Saves to local Python service', 'presentation.saveServer', null, false)), h('p', { class: 'bs-note' }, 'Current state: ' + (SAVE_TEXT[ui.saveState] || '') + '.')); }
     else if (id === 'export') { head(); wrap.append(h('div', { class: 'bs-cards' }, bsBtn('file-text', 'PowerPoint (.pptx)', 'Native editable PowerPoint presentation', 'present.export', { format: 'pptx' }), bsBtn('file-text', 'PDF (.pdf)', 'Direct PDF presentation export', 'present.export', { format: 'pdf' }), bsBtn('download', 'Project file (.json)', 'Editor state with all figure images', 'file.exportJson'))); }
     else if (id === 'setup') {
@@ -90,7 +90,7 @@
           bsBtn('refresh-cw', 'Re-detect', 'Scan for LibreOffice and update the PDF export status', 'setup.openRepair', { mode: 'repair' }),
           bsBtn('settings-2', 'Install / Reinstall PDF converter', 'Download and install the managed LibreOffice copy', 'setup.openRepair', { mode: 'repair' }),
           bsBtn('trash-2', 'Remove managed converter', 'Delete only the copy Laurevine Rose downloaded', 'setup.openRepair', { mode: 'repair' }),
-          bsBtn('file-text', 'View license', 'Read the software license agreement', 'setup.openRepair', { mode: 'repair' })
+          bsBtn('file-text', 'View license', 'Read the software license agreement', 'app.legalDoc', { doc: 'apache' })
         ));
         wrap.append(h('p', { class: 'bs-note' }, 'Opening the Setup wizard does not restart the backend or lose unsaved work.'));
       } else {
@@ -105,7 +105,8 @@
     } else {
       head();
       const row = (k, v) => h('div', { class: 'bs-row' }, h('span', null, h('b', null, k), h('small', null, v)));
-      wrap.append(h('div', { class: 'bs-list' }, row('Version', RPE.backstageMeta.VERSION), row('Project files', '.rpe.json, with every figure image and its settings'), row('Export', 'PowerPoint (.pptx) and PDF through the local Python service'), row('Credits', 'Icons: Lucide (ISC). Typeface: Spline Sans (SIL OFL).')));
+      wrap.append(h('div', { class: 'bs-list' }, row('Version', RPE.backstageMeta.VERSION), row('Project files', '.rpe.json, with every figure image and its settings'), row('Export', 'PowerPoint (.pptx) and PDF through the local Python service'), row('License', 'Apache License 2.0. The Laurevine Rose name, logo and artwork are trademarks of Biowess and are not covered by it.'), row('Credits', 'Icons: Lucide (ISC). Typeface: Spline Sans (SIL OFL).')));
+      wrap.append(h('div', { class: 'bs-cards bs-cards--about' }, bsBtn('file-text', 'Apache License', 'Read the Apache License, Version 2.0', 'app.legalDoc', { doc: 'apache' }), bsBtn('file-text', 'Trademark', 'Name, logo and artwork are not covered by the license', 'app.legalDoc', { doc: 'trademark' }), bsBtn('file-text', 'Third-Party Notices', 'Licenses of the open-source components included', 'app.legalDoc', { doc: 'notices' })));
     }
     return wrap;
   }
@@ -117,6 +118,18 @@
     const a = bs.querySelector('.bs-item.is-active'); if (a && !bs.contains(document.activeElement)) a.focus({ preventScroll: true });
     RPE.ribbon.refresh();
   }
+  /* File > About: legal documents (desktop app: read by the main process; elsewhere: fetched from the app folder) */
+  const LEGAL = { apache: ['Apache License 2.0', 'LICENSE.txt'], trademark: ['Trademark Notice', 'TRADEMARK.md'], notices: ['Third-Party Notices', 'THIRD_PARTY_NOTICES.txt'] };
+  RPE.commands.register('app.legalDoc', async (a) => {
+    const d = LEGAL[a && a.doc]; if (!d) return;
+    let text = null;
+    try {
+      if (window.desktopAPI && typeof window.desktopAPI.getLegalDoc === 'function') { const r = await window.desktopAPI.getLegalDoc(a.doc); if (r && r.ok) text = r.text; }
+      else { const r = await fetch(d[1]); if (r.ok) text = await r.text(); }
+    } catch (e) { text = null; }
+    if (text == null) { U.toast('The document could not be loaded.', { kind: 'warn' }); return; }
+    U.dialog({ title: d[0], icon: 'file-text', width: 640, dismiss: 'backdrop', body: h('pre', { class: 'bs-doc' }, text), buttons: [{ label: 'Close', kind: 'primary' }] });
+  });
   RPE.commands.register('presentation.saveServer', async () => {
     const res = await RPE.backend.request('presentation.save', { doc: S.prepareSave() });
     if (res && res.ok) {
@@ -219,6 +232,85 @@
       rd.onerror = () => U.toast('That file could not be read.', { kind: 'warn' });
       rd.readAsText(f);
     });
+
+    const fileImport = $('#fileImportPptx');
+    if (fileImport) {
+      fileImport.addEventListener('change', async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        e.target.value = '';
+
+        if (!/\.pptx$/i.test(f.name) && f.type && !f.type.includes('presentationml')) {
+          U.toast('Please select a PowerPoint presentation file (.pptx).', { kind: 'warn' });
+          return;
+        }
+
+        const proceed = await U.confirm({
+          title: 'Import PowerPoint presentation',
+          icon: 'triangle-alert',
+          message: 'PowerPoint import converts slides, text, shapes, tables, and pictures into native Laurevine Rose elements. Complex elements (such as animations, SmartArt, media clips, and embedded charts) may be omitted or rendered differently.\n\nYour original PowerPoint file will remain unchanged and will never be overwritten.',
+          confirmLabel: 'Import presentation',
+          cancelLabel: 'Cancel'
+        });
+        if (!proceed) return;
+
+        const ctrl = new AbortController();
+        const chip = U.progressChip({
+          text: 'Importing ' + f.name + '…',
+          onCancel: () => ctrl.abort()
+        });
+
+        try {
+          const res = await RPE.backend.request('presentation.import', { file: f, signal: ctrl.signal });
+          if (chip && typeof chip.remove === 'function') chip.remove();
+
+          if (!res || !res.ok) {
+            const msg = (res && res.message) || 'Import failed';
+            U.toast('Could not import PowerPoint presentation: ' + msg, { kind: 'warn', duration: 8000 });
+            return;
+          }
+
+          const doc = res.doc;
+          if (!doc || !Array.isArray(doc.slides) || doc.slides.length === 0) {
+            U.toast('Imported PowerPoint presentation contains no slides.', { kind: 'warn' });
+            return;
+          }
+
+          doc.slides.forEach((sl) => {
+            if (!sl.id) sl.id = S.uid('s');
+            sl.objects = Array.isArray(sl.objects) ? sl.objects.filter((o) => o && typeof o === 'object') : [];
+            sl.objects.forEach((o) => { if (!o.id) o.id = S.uid('o'); });
+          });
+
+          if (!doc.title || doc.title === 'Imported Presentation' || doc.title === 'Untitled Presentation') {
+            if (res.fileName) {
+              const clean = res.fileName.replace(/\.[^.]*$/, '').trim();
+              if (clean) doc.title = clean;
+            }
+          }
+
+          // Replace doc with 'new' save state to ensure original file is never overwritten
+          const notes = S.replaceDoc(doc, 'new');
+          S.setUI({ backstage: null });
+
+          const ws = res.warnings || [];
+          if (ws.length > 0) {
+            const summary = ws.slice(0, 3).map((w) => w.message || `Slide ${w.slide}: ${w.shape || w.type}`).join('; ');
+            const more = ws.length > 3 ? ` (+${ws.length - 3} more)` : '';
+            U.toast(`Imported "${f.name}" with compatibility notices: ${summary}${more}`, { kind: 'warn', duration: 10000 });
+          } else {
+            U.toast(`Imported "${f.name}" successfully.`, { kind: 'success', duration: 4000 });
+          }
+        } catch (err) {
+          if (chip && typeof chip.remove === 'function') chip.remove();
+          if (err && err.name === 'AbortError') {
+            U.toast('Import cancelled.', { kind: 'info', duration: 3000 });
+          } else {
+            U.toast('Import error: ' + (err.message || 'unknown error'), { kind: 'warn', duration: 8000 });
+          }
+        }
+      });
+    }
   }
 
   /* ---------- boot ---------- */
@@ -235,7 +327,10 @@
     $('#paneResizer').setAttribute('aria-valuenow', String(ui.paneWidth));
     document.addEventListener('keydown', onKey);
     document.addEventListener('pointerdown', (e) => { if (ui.ribbonPeek && !e.target.closest('.ribbon,.tabrow,.popover')) S.setUI({ ribbonPeek: false }); }, true);
-    window.addEventListener('beforeunload', (e) => { if (ui.saveState === 'dirty' || ui.saveState === 'failed') { e.preventDefault(); e.returnValue = ''; } });
+    window.addEventListener('beforeunload', (e) => {
+      if (window.__isClosing) return;
+      if (ui.saveState === 'dirty' || ui.saveState === 'failed') { e.preventDefault(); e.returnValue = ''; }
+    });
     window.addEventListener('error', (e) => console.error('[rpe] uncaught', e.message));
     const all = () => { updateTitle(); updateStatus(); updateLayout(); syncNotes(true); renderBackstage(); };
     RPE.bus.on('doc', (e) => { updateTitle(); updateStatus(); syncNotes(!!(e.hint && e.hint.history)); });
@@ -249,8 +344,8 @@
     all(); RPE.ribbon.refresh();
     S.migrateLegacyLocal().then(() => S.refreshLocalInfo());
     document.body.classList.add('is-ready');
-    RPE.app = { version: '1.1.0' };
-    RPE.bus.emit('ready', { version: '1.1.0' });
+    RPE.app = { version: '1.0.0' };
+    RPE.bus.emit('ready', { version: '1.0.0' });
     // When the repair wizard closes, re-render the setup backstage panel if open
     if (window.ipcRenderer && typeof window.ipcRenderer.on === 'function') {
       window.ipcRenderer.on('app:setup-closed', () => { if (ui.backstage === 'setup') renderBackstage(); });

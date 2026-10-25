@@ -40,7 +40,6 @@ Thumbs.db
 representative_sample_deck.pdf
 representative_sample_deck.pptx
 representative_sample_deck.rpe.json
-run.spec
 run.spec.debian-v1
 run.spec.fedora
 run.spec.fedora-backup
@@ -51,3 +50,7 @@ screenshots/
 .tools/
 .venv-build/
 .venv-fedora/
+
+.dockerignore
+Dockerfile.appimage
+

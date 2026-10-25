@@ -191,7 +191,9 @@ def _export_latex(rec: Dict[str, Any], fmt: str, dpi: Optional[int], background:
     dpi = dpi or rec["export"]["dpi"]
     w_in = None if lx["native"] else rec["export"]["wIn"]
     if fmt == "png" and background == "transparent" and not latex_core.alpha_supported():
-        raise ExportError(422, "A transparent background needs PyMuPDF (pip install pymupdf); choose a white background.")
+        raise ExportError(422, "Transparent PNG export is not available for LaTeX figures: "
+                              "the rasterizer (pdftoppm) always renders on a white background. "
+                              "Choose a white background, or export as PDF.")
     res = latex_core.compile_latex(src, lx["mode"], lx["engine"])
     if res.status != "ok":
         raise ExportError(422, res.message or "The LaTeX source could not be compiled.")

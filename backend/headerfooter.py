@@ -190,9 +190,13 @@ def number_value(doc: Any, index: int) -> int:
     return number_start(doc) + index
 
 
-def number_style(doc: Any) -> Dict[str, Any]:
+def number_style(doc: Any, slide: Any = None, on_accent: Optional[str] = None) -> Dict[str, Any]:
+    """Slide-number style. On a full-bleed accent slide (see backdrop()) the default colour is ``on_accent`` (explicit numberItem.color wins)."""
     st = dict(NUM_DEFAULTS)
-    st.update({k: v for k, v in ((_get(doc, "hf") or {}).get("numberItem") or {}).items() if k not in ("x", "y", "w", "h")})
+    item = (_get(doc, "hf") or {}).get("numberItem") or {}
+    st.update({k: v for k, v in item.items() if k not in ("x", "y", "w", "h")})
+    if not item.get("color") and on_accent and backdrop(doc, slide)[1]:
+        st["color"] = on_accent
     return st
 
 
@@ -206,6 +210,31 @@ def number_geom(doc: Any) -> Dict[str, float]:
         if isinstance(item.get(k), (int, float)) and not isinstance(item.get(k), bool):
             g[k] = item[k]
     return g
+
+
+def backdrop(doc: Any, slide: Any) -> "tuple[int, bool]":
+    """(index, on_accent) of the last leading full-slide filled shape (Section / Quote layouts), else (-1, False).
+
+    Header / footer / number are drawn right above it (still behind the content) instead of behind every object, where the backdrop
+    covered them; ``on_accent`` = the fill is an accent colour, so unstyled regions default to the on-accent colour. Mirror of js backdrop().
+    """
+    size = _get(doc, "size")
+    W, H = _get(size, "w"), _get(size, "h")
+    objs = _get(slide, "objects") or []
+    if not W or not H:
+        return -1, False
+    last, acc = -1, False
+    for i, o in enumerate(objs):
+        fill, opacity = _get(o, "fill"), _get(o, "opacity")
+        full = (
+            _get(o, "type") == "shape" and fill and fill != "transparent" and not (opacity is not None and opacity < 0.99)
+            and (_get(o, "x") or 0) <= 2 and (_get(o, "y") or 0) <= 2 and (_get(o, "w") or 0) >= W - 2 and (_get(o, "h") or 0) >= H - 2
+        )
+        if full:
+            last, acc = i, fill in ("accent", "accent2")
+        elif _get(o, "slot") != "deco":
+            break   # only the leading decoration block counts
+    return (last, acc) if last >= 0 else (-1, False)
 
 
 def _is_title(slide: Any) -> bool:
@@ -237,8 +266,9 @@ def number_on(doc: Any, slide: Any) -> bool:
     return not _is_title(slide)
 
 
-def view(doc: Any, slide: Any, key: str) -> Optional[Dict[str, Any]]:
-    """Render dict (SlideObject-shaped text object) for a visible region, else None."""
+def view(doc: Any, slide: Any, key: str, on_accent: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Render dict (SlideObject-shaped text object) for a visible region, else None.
+    ``on_accent`` (resolved colour) = default colour on a full-bleed accent slide; an explicit item colour wins."""
     st = state(doc, slide, key)
     if not st["visible"]:
         return None
@@ -246,6 +276,8 @@ def view(doc: Any, slide: Any, key: str) -> Optional[Dict[str, Any]]:
     g = region(key, _get(size, "w"), _get(size, "h"))
     d: Dict[str, Any] = {"id": "hf:" + key, "type": "text", "role": "hf-" + key, "vAlign": "middle", "html": ""}
     d.update(DEFAULTS)
+    if on_accent and backdrop(doc, slide)[1]:
+        d["color"] = on_accent
     d.update({k: v for k, v in st["item"].items() if k != "enabled"})
     d.update(g)
     return d

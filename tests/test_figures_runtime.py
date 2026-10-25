@@ -16,10 +16,9 @@ from backend.figures.models import MAX_DPI, MAX_PX_SIDE, MIN_DPI
 from backend.server import app
 
 client = TestClient(app)
-KEYS = {"python", "matplotlib", "numpy", "pandas", "scipy", "pymupdf", "tex", "rasterizer", "limits", "platform",
+KEYS = {"python", "matplotlib", "numpy", "pandas", "scipy", "tex", "rasterizer", "limits", "platform",
         "warnings", "checkedAt", "fonts"}
-PROBE = {"python": "3.12.3", "matplotlib": "3.9.0", "numpy": "2.0.0", "pandas": "2.2.0", "scipy": "1.13.0",
-         "pymupdf": "1.24.1"}
+PROBE = {"python": "3.12.3", "matplotlib": "3.9.0", "numpy": "2.0.0", "pandas": "2.2.0", "scipy": "1.13.0"}
 BANNERS = {"pdflatex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)\nkpathsea version 6.3.5\nCopyright",
            "xelatex": "XeTeX 3.141592653-2.6-0.999995 (TeX Live 2023/Debian)\nkpathsea version 6.3.5",
            "lualatex": "This is LuaTeX, Version 1.17.0 (TeX Live 2023/Debian)\nDevelopment id: 1"}
@@ -76,14 +75,14 @@ def test_endpoint_schema():
     assert j["python"] == platform.python_version()
     for pkg in ("matplotlib", "numpy"):          # required by the runner, so present wherever these tests run
         assert j[pkg] == md.version(pkg)
-    for pkg in ("pandas", "scipy", "pymupdf"):
+    for pkg in ("pandas", "scipy"):
         assert j[pkg] is None or (isinstance(j[pkg], str) and j[pkg])
     assert set(j["tex"]) == {"engines", "kpsewhich", "pgfplots"}
     assert set(j["tex"]["engines"]) <= set(runtime.TEX_ENGINES)
     for info in j["tex"]["engines"].values():
         assert set(info) == {"path", "version"} and info["path"]
     assert isinstance(j["tex"]["pgfplots"], bool)
-    assert j["rasterizer"] == ("pymupdf" if j["pymupdf"] else None)
+    assert j["rasterizer"] in ("pdftoppm", None)   # pdftoppm when poppler is installed, else None
     assert j["limits"]["dpi"] == [MIN_DPI, MAX_DPI] and j["limits"]["maxPxSide"] == MAX_PX_SIDE
     assert j["limits"]["pythonTimeoutS"] == 30 and j["limits"]["latexTimeoutS"] == 60
     assert set(j["platform"]) == {"system", "release", "machine"} and j["platform"]["system"] == platform.system()
@@ -100,7 +99,8 @@ def test_engine_versions_paths_and_pgfplots(monkeypatch):
     assert j["tex"]["engines"]["xelatex"]["version"].startswith("XeTeX 3.141592653")
     assert j["tex"]["kpsewhich"] == "/tex/kpsewhich" and j["tex"]["pgfplots"] is True
     assert j["warnings"] == []
-    assert {"matplotlib": "3.9.0", "pymupdf": "1.24.1", "rasterizer": "pymupdf"}.items() <= j.items()
+    assert {"matplotlib": "3.9.0"}.items() <= j.items()
+    assert j["rasterizer"] in (None, "pdftoppm")   # None in mock env; pdftoppm when system poppler is installed
     assert ["/tex/kpsewhich", "pgfplots.sty"] in calls
 
 
@@ -146,11 +146,12 @@ def test_engine_that_reports_no_version_is_listed_with_warning(monkeypatch):
     assert any("pdflatex was found but did not report a version" in w for w in j["warnings"])
 
 
-def test_missing_python_packages_are_null_and_disable_rasterizer(monkeypatch):
-    install_fake(monkeypatch, probe={**PROBE, "scipy": None, "pymupdf": None})
+def test_missing_python_packages_are_null(monkeypatch):
+    install_fake(monkeypatch, probe={**PROBE, "scipy": None})
     j = runtime.get_runtime()
-    assert j["scipy"] is None and j["pymupdf"] is None and j["rasterizer"] is None
+    assert j["scipy"] is None
     assert j["matplotlib"] == "3.9.0" and j["python"] == "3.12.3"
+    # rasterizer now depends on pdftoppm (external tool), not on pymupdf; the fake does not mock shutil.which for it
 
 
 def test_packages_are_probed_by_an_isolated_interpreter(monkeypatch):

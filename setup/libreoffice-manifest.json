@@ -2,6 +2,7 @@
   "generated": "2026-10-20T00:00:00Z",
   "source": "https://download.documentfoundation.org/libreoffice/stable/26.2.6/",
   "license": "MPL-2.0",
+  "allow_any_https_redirect": true,
   "license_url": "https://www.libreoffice.org/download/license/",
   "note": "Download and extraction are UNTESTED. Metadata is verified against official documentfoundation.org files only. The installer must refuse entries with verified=false.",
 

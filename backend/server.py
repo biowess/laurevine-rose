@@ -1,4 +1,4 @@
-"""FastAPI Server for Research Presentation Editor.
+"""FastAPI Server for Laurevine Rose.
 
 Serves the frontend static files on loopback and provides API endpoints for:
 - /api/health: health check and connection status
@@ -21,9 +21,11 @@ from fastapi.staticfiles import StaticFiles
 
 from backend import security
 from backend.exporter import export_presentation
+from backend.importer import import_presentation
 from backend.figures import jobs as figure_jobs
 from backend.figures.router import router as figures_router
 from backend.models import ExportRequest, PresentationDoc, SaveRequest, upgrade_document
+from starlette.datastructures import UploadFile
 
 
 
@@ -38,7 +40,7 @@ async def lifespan(_app: FastAPI):
         figure_jobs.shutdown()
 
 
-app = FastAPI(title="Research Presentation Editor API", version="1.1.0", lifespan=lifespan)
+app = FastAPI(title="Laurevine Rose API", version="1.0.0", lifespan=lifespan)
 
 # Same-origin only: the page is served by this app. Extra origins only through RPE_ALLOWED_ORIGINS (docs/SECURITY.md).
 app.add_middleware(
@@ -83,11 +85,36 @@ async def health_check():
     """Health check endpoint to indicate backend connectivity."""
     return {
         "status": "ok",
-        "service": "Research Presentation Editor",
-        "version": "1.1.0",
+        "service": "Laurevine Rose",
+        "version": "1.0.0",
         "connected": True,
     }
 
+@app.get("/LICENSE.txt", include_in_schema=False)
+async def license_file():
+    """Apache-2.0 license text. Opened by the wizard's 'View License' button."""
+    path = os.path.join(BASE_DIR, "LICENSE.txt")
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="LICENSE.txt not found")
+    return FileResponse(path, media_type="text/plain; charset=utf-8")
+
+
+@app.get("/TRADEMARK.md", include_in_schema=False)
+async def trademark_file():
+    """Trademark and brand-assets policy. Opened by 'View Trademark Policy'."""
+    path = os.path.join(BASE_DIR, "TRADEMARK.md")
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="TRADEMARK.md not found")
+    return FileResponse(path, media_type="text/plain; charset=utf-8")
+
+
+@app.get("/THIRD_PARTY_NOTICES.txt", include_in_schema=False)
+async def third_party_notices_file():
+    """Deduplicated third-party license texts. Opened by 'View Third-Party Licenses'."""
+    path = os.path.join(BASE_DIR, "THIRD_PARTY_NOTICES.txt")
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="THIRD_PARTY_NOTICES.txt not found")
+    return FileResponse(path, media_type="text/plain; charset=utf-8")
 
 def export_warning_headers(warnings: list) -> dict:
     """`X-Export-Warnings`: JSON list of export notes (ASCII-escaped, capped so the header stays small)."""
@@ -185,6 +212,68 @@ async def save_presentation_endpoint(request: SaveRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Save validation failed: {str(e)}")
+
+
+@app.post("/api/presentation/import")
+async def import_presentation_endpoint(request: Request):
+    """Import an existing PowerPoint presentation (.pptx) into canonical PresentationDoc format."""
+    ctype = request.headers.get("content-type", "").lower()
+    raw_data: bytes
+    file_name: Optional[str] = None
+
+    if "multipart/form-data" in ctype:
+        form = await request.form()
+        upload = form.get("file")
+        if not isinstance(upload, UploadFile):
+            raise HTTPException(400, "Send the PowerPoint presentation as a multipart field named 'file'.")
+        raw_data = await upload.read()
+        file_name = upload.filename
+    elif "application/json" in ctype:
+        try:
+            body = await request.json()
+        except ValueError:
+            raise HTTPException(400, "The request body is not valid JSON.")
+        if not isinstance(body, dict):
+            raise HTTPException(400, "Request body must be a JSON object.")
+        b64 = body.get("fileBase64") or body.get("file")
+        if not b64 or not isinstance(b64, str):
+            raise HTTPException(400, "Missing 'fileBase64' string in JSON body.")
+        import base64
+        try:
+            raw_data = base64.b64decode(b64)
+        except Exception:
+            raise HTTPException(400, "Failed to decode base64 file data.")
+        file_name = body.get("fileName")
+    else:
+        # Raw bytes stream fallback
+        raw_data = await request.body()
+        file_name = request.headers.get("x-filename")
+
+    if not raw_data:
+        raise HTTPException(400, "Empty PowerPoint presentation file received.")
+
+    warnings: list = []
+    try:
+        doc = import_presentation(raw_data, warnings=warnings)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, detail=f"Failed to import PowerPoint presentation: {str(exc)}")
+
+    if file_name:
+        clean_name = os.path.splitext(os.path.basename(file_name))[0].strip()
+        if clean_name:
+            doc.title = clean_name
+
+    return {
+        "ok": True,
+        "status": "ok",
+        "doc": doc.model_dump(),
+        "warnings": warnings,
+        "fileName": file_name,
+    }
 
 
 @app.middleware("http")

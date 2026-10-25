@@ -34,7 +34,7 @@
   F.runtime = () => (cached && Date.now() - cached.at < TTL ? Promise.resolve(cached.report) : load(false));
   F.refresh = () => load(true);
 
-  const LABELS = [['python', 'Python'], ['matplotlib', 'Matplotlib'], ['numpy', 'NumPy'], ['pandas', 'pandas'], ['scipy', 'SciPy'], ['pymupdf', 'PyMuPDF']];
+  const LABELS = [['python', 'Python'], ['matplotlib', 'Matplotlib'], ['numpy', 'NumPy'], ['pandas', 'pandas'], ['scipy', 'SciPy']];
   F.summary = function (rt) {
     if (!rt) return 'Figure runtime details are unavailable.';
     const have = LABELS.filter(([k]) => rt[k]).map(([k, n]) => n + ' ' + rt[k]);

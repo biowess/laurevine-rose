@@ -121,8 +121,31 @@
   const numberStart = (doc) => { const v = doc && doc.hf && doc.hf.startAt; return Number.isInteger(v) ? v : 1; };
   /* number shown on the slide at 0-based position `index` (hidden slides still count, like PowerPoint) */
   const numberValue = (doc, index) => numberStart(doc) + index;
-  const numberStyle = (doc) => Object.assign({}, NUM_DEFAULTS, (doc && doc.hf && doc.hf.numberItem) || {});
+  /* `slide` (optional): on a full-bleed accent slide the default number colour is the on-accent token (an explicit numberItem.color wins) */
+  const numberStyle = (doc, slide) => {
+    const st = Object.assign({}, NUM_DEFAULTS, (doc && doc.hf && doc.hf.numberItem) || {});
+    if (!(doc && doc.hf && doc.hf.numberItem && doc.hf.numberItem.color) && backdrop(doc, slide).onAccent) st.color = 'onAccent';
+    return st;
+  };
   const numberGeom = (doc) => numberRegion(doc && doc.size, doc && doc.hf && doc.hf.numberItem);
+
+  /* ---------- full-bleed backdrop ----------
+     Layouts such as Section / Quote start with a slide-sized accent rectangle (a normal object). Header / footer / number used to be
+     drawn *behind* every object, so on those slides they were covered (editor and PPTX) and the muted default colour was unreadable.
+     backdrop() = { index, onAccent }: index of the last leading full-slide filled shape (-1 = none); the regions are drawn right above it
+     (still behind all content), and onAccent = the fill is an accent colour, so unstyled regions default to the on-accent colour. */
+  const FULL_TOL = 2;
+  function backdrop(doc, slide) {
+    const none = { index: -1, onAccent: false }, objs = slide && slide.objects, W = doc && doc.size && doc.size.w, H = doc && doc.size && doc.size.h;
+    if (!Array.isArray(objs) || !W || !H) return none;
+    let last = -1, acc = false;
+    for (let i = 0; i < objs.length; i++) {
+      const o = objs[i];
+      const full = o && o.type === 'shape' && o.fill && o.fill !== 'transparent' && !(o.opacity < 0.99) && o.x <= FULL_TOL && o.y <= FULL_TOL && o.w >= W - FULL_TOL && o.h >= H - FULL_TOL;
+      if (full) { last = i; acc = o.fill === 'accent' || o.fill === 'accent2'; } else if (!o || o.slot !== 'deco') break;   // only the leading decoration block counts
+    }
+    return last < 0 ? none : { index: last, onAccent: acc };
+  }
 
   /* ---------- resolution ---------- */
   const isTitle = (slide) => !!slide && slide.layout === 'title';
@@ -149,8 +172,9 @@
   function view(doc, slide, key, force) {
     const st = state(doc, slide, key);
     if (!st.visible && !(force && st.editable)) return null;
-    const g = region(key, doc.size);
-    return Object.assign({ id: 'hf:' + key, type: 'text', role: 'hf-' + key, vAlign: 'middle', hf: key, html: '' }, DEFAULTS, st.item || {}, g);
+    const g = region(key, doc.size), dflt = Object.assign({}, DEFAULTS);
+    if (backdrop(doc, slide).onAccent) dflt.color = 'onAccent';
+    return Object.assign({ id: 'hf:' + key, type: 'text', role: 'hf-' + key, vAlign: 'middle', hf: key, html: '' }, dflt, st.item || {}, g);
   }
 
   /* ---------- editing: a live object for the editor's text engine ---------- */
@@ -174,6 +198,7 @@
      first write so nothing exists until there is something to store). Call within S.mutate for undoable writes. */
   function proxy(doc, slide, key) {
     const g = region(key, doc.size), cur = () => holder(doc, slide, key, false);
+    const dflt = () => (backdrop(doc, slide).onAccent ? Object.assign({}, DEFAULTS, { color: 'onAccent' }) : DEFAULTS);
     const read = (p) => {
       if (GEO.includes(p)) return g[p];
       if (p === 'id') return 'hf:' + key;
@@ -183,7 +208,7 @@
       if (p === 'hf') return key;
       const it = cur();
       if (it && it[p] !== undefined) return it[p];
-      return p === 'html' ? '' : DEFAULTS[p];
+      return p === 'html' ? '' : dflt()[p];
     };
     const keys = () => RESERVED.concat(Object.keys(cur() || {}).filter((k) => !RESERVED.includes(k)));
     return new Proxy({}, {
@@ -202,6 +227,6 @@
     return state(doc, slide, key).editable ? proxy(doc, slide, key) : null;
   }
 
-  RPE.hf = { numberStart, numberValue, numberStyle, numberGeom, NUM_DEFAULTS, cleanNumberItem, KEYS, DEFAULTS, plain, hasText, safeHtml, cleanItem, normalize, prune, region, numberRegion, state, numberOn, view, proxy, resolveId, isId, holder };
+  RPE.hf = { numberStart, numberValue, numberStyle, numberGeom, backdrop, NUM_DEFAULTS, cleanNumberItem, KEYS, DEFAULTS, plain, hasText, safeHtml, cleanItem, normalize, prune, region, numberRegion, state, numberOn, view, proxy, resolveId, isId, holder };
   if (typeof module !== 'undefined' && module.exports) module.exports = RPE.hf;
 })(typeof window !== 'undefined' ? (window.RPE = window.RPE || {}) : (globalThis.RPE = globalThis.RPE || {}));

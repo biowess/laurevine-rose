@@ -220,6 +220,25 @@
     if (ui.saveState === 'dirty') U.confirm({ title: 'Discard unsaved changes?', message: 'The current presentation has changes that were not saved. Creating a new one will replace it.', confirmLabel: 'Discard and continue', danger: true }).then((ok) => ok && go()); else go();
   });
   register('file.openFile', () => { const i = document.getElementById('fileOpen'); if (i) { i.value = ''; i.click(); } });
+  register('file.importPptx', async () => {
+    const go = () => {
+      const i = document.getElementById('fileImportPptx');
+      if (i) {
+        i.value = '';
+        i.click();
+      }
+    };
+    if (ui.saveState === 'dirty') {
+      const ok = await U.confirm({
+        title: 'Discard unsaved changes?',
+        message: 'The current presentation has unsaved changes. Importing a PowerPoint presentation will replace it.',
+        confirmLabel: 'Discard and continue',
+        danger: true
+      });
+      if (!ok) return;
+    }
+    go();
+  });
   register('file.openLocal', async () => {
     try {
       const saved = await S.loadLocal(); if (!saved) { U.toast('Nothing saved in this browser yet.'); return; }
@@ -860,6 +879,22 @@
     const p = place(120, 64); addObject(newText(`<p>${U.esc(a.char)}</p>`, { x: p.x, y: p.y, w: 120, fontSize: 32 }), 'symbol');
   });
   register('insert.symbolLibrary', () => { RPE.symbolLibrary.open(); });   // modal; inserts at the preserved caret (symbollib.js)
+  register('insert.equation', () => {
+    ensureNormal();
+    if (RPE.equation && RPE.equation.open) {
+      RPE.equation.open();
+    }
+  });
+  register('equation.edit', {
+    run(a) {
+      ensureNormal();
+      const o = a.obj || sel().find((x) => x.type === 'image' && x.latex);
+      if (o && RPE.equation && RPE.equation.open) {
+        RPE.equation.open({ obj: o });
+      }
+    },
+    enabled: () => sel().some((o) => o.type === 'image' && o.latex)
+  });
   register('insert.pythonPlot', () => { ensureNormal(); if (RPE.figures && RPE.figures.pyfigure) RPE.figures.pyfigure.open(); else RPE.dialogs.plot({ mode: 'insert' }); });
   register('insert.pgfplots', () => { ensureNormal(); RPE.figures.latex.open(); });
   register('insert.figure', () => { ensureNormal(); RPE.dialogs.figure({ mode: 'insert' }); });

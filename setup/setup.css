@@ -54,6 +54,7 @@ img, svg { -webkit-user-drag: none; }
 .step__title--sm { font-size: 1.75rem; }
 .step__intro { flex: none; margin: 0.5rem 0 0.75rem 0; font-size: 0.875rem; line-height: 1.4; color: var(--text-2); }
 .license { flex: 1; min-height: 0; margin: 0; padding: 0.875rem 1rem; overflow-y: auto; white-space: pre-wrap; overflow-wrap: break-word; font-family: var(--font); font-size: 0.9375rem; line-height: 1.55; color: var(--text); background: #FFFFFF; border: 1px solid var(--border-2); border-radius: var(--r); user-select: text; -webkit-user-select: text; }
+.legal-links { flex: none; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
 .check { flex: none; display: flex; align-items: center; gap: 0.625rem; margin-top: 0.75rem; font-size: 0.9375rem; line-height: 1.3; cursor: pointer; }
 .check input { flex: none; width: 1.125rem; height: 1.125rem; margin: 0; accent-color: var(--burgundy); cursor: pointer; }
 .check input:disabled { cursor: default; }

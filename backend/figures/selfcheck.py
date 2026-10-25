@@ -34,9 +34,7 @@ REQUIRED_MODULES = [
     ("scipy", "Statistical computations", "scipy"),
 ]
 
-OPTIONAL_MODULES = [
-    ("fitz", "PyMuPDF PDF-to-image rasterizer", "pymupdf"),
-]
+OPTIONAL_MODULES: list = []  # No optional Python packages in the current release
 
 
 def check_libreoffice() -> Dict[str, Optional[str]]:
@@ -86,7 +84,7 @@ def run_selfcheck() -> Tuple[Dict[str, Any], List[str]]:
     deps = check_dependencies()
 
     report: Dict[str, Any] = {
-        "version": "1.1.0",
+        "version": "1.0.0",
         "python": {
             "version": platform.python_version(),
             "executable": sys.executable,
@@ -134,13 +132,6 @@ def run_selfcheck() -> Tuple[Dict[str, Any], List[str]]:
             "(e.g. 'sudo dnf install libreoffice' or 'sudo apt install libreoffice')."
         )
 
-    # Check PyMuPDF
-    if not deps.get("fitz", {}).get("found"):
-        actionable.append(
-            "PyMuPDF ('pymupdf') is not installed. PDF-to-image rasterization will be disabled. "
-            "Install with: pip install pymupdf"
-        )
-
     report["actionable"] = actionable
     return report, actionable
 
@@ -148,7 +139,7 @@ def run_selfcheck() -> Tuple[Dict[str, Any], List[str]]:
 def format_report_text(report: Dict[str, Any]) -> str:
     lines: List[str] = [
         "=" * 64,
-        " Research Presentation Editor v1.1.0 — Runtime Self-Check",
+        " Laurevine Rose v1.0.0 — Runtime Self-Check",
         "=" * 64,
         f"Platform:      {report['platform'].get('system')} {report['platform'].get('release')} ({report['platform'].get('machine')})",
         f"Python:        {report['python']['version']} ({report['python']['executable']})",
@@ -221,7 +212,7 @@ def format_report_text(report: Dict[str, Any]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Research Presentation Editor runtime self-check")
+    parser = argparse.ArgumentParser(description="Laurevine Rose runtime self-check")
     parser.add_argument("--json", action="store_true", help="Print report as JSON")
     args = parser.parse_args()
 

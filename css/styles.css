@@ -81,13 +81,12 @@ body.is-desktop-app .titlebar .win-controls { -webkit-app-region: no-drag; }
 .search-empty { padding: 10px; color: var(--text-2); }
 
 /* ---------- tab row ---------- */
-.tabrow { display: flex; align-items: flex-end; justify-content: space-between; background: var(--app-bg); padding: 0 8px 0 8px; position: relative; z-index: 2; }
-.tablist { display: flex; align-items: flex-end; min-width: 0; overflow: hidden; }
+.tabrow { display: flex; align-items: flex-end; justify-content: space-between; background: var(--app-bg); padding: 0 8px 0 8px; position: relative; z-index: 4; }   /* above .ribbon (z 3) so the active tab can cover the ribbon's top border */
+.tablist { display: flex; align-items: flex-end; min-width: 0; overflow: hidden; padding-bottom: 1px; margin-bottom: -1px; }   /* 1px room so the active tab can overlap the ribbon border without being clipped */
 .tab { position: relative; height: 31px; padding: 0 14px; border: 1px solid transparent; border-bottom: 0; border-radius: var(--r) var(--r) 0 0; background: transparent; font-size: 13px; color: var(--text); white-space: nowrap; transition: background-color var(--t-fast), color var(--t-fast); }
-.tab::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; background: var(--burgundy); transform: scaleX(0); transition: transform 150ms ease; }
 .tab:hover { background: var(--hover); }
-.tab.is-active { background: var(--surface); border-color: var(--border); font-weight: 500; color: var(--burgundy); margin-bottom: -1px; height: 32px; }
-.tab.is-active::after { transform: scaleX(1); }
+/* active tab: no underline, open bottom edge; its surface fill overlaps the ribbon's 1px top border so tab + ribbon read as one shape */
+.tab.is-active { background: var(--surface); border-color: var(--border); font-weight: 500; color: var(--burgundy); margin-bottom: -1px; height: 33px; }
 .tab--file { background: var(--burgundy); color: #fff; margin-right: 6px; border-radius: var(--r); height: 26px; align-self: center; font-weight: 500; }
 .tab--file:hover { background: var(--burgundy-d); }
 .tab--file::after { display: none; }
@@ -249,8 +248,10 @@ body.is-desktop-app .titlebar .win-controls { -webkit-app-region: no-drag; }
 .bs-panel { max-width: 760px; }
 .bs-panel h2 { margin: 0 0 6px; font-size: 22px; font-weight: 600; color: var(--burgundy); }
 .bs-lead { margin: 0 0 22px; max-width: 64ch; line-height: 1.5; color: var(--text-2); font-size: 14px; }
+.bs-doc { margin: 0; max-height: 60vh; overflow: auto; white-space: pre-wrap; overflow-wrap: break-word; font: 12px/1.5 var(--font-mono, ui-monospace, Consolas, monospace); }
 .bs-note { color: var(--text-2); font-size: 12.5px; margin: 14px 0 0; }
 .bs-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.bs-cards--about { margin-top: 10px; }
 .bs-card { display: flex; align-items: flex-start; gap: 12px; text-align: left; padding: 14px 16px; border: 1px solid var(--border); border-radius: 4px; background: #fff; transition: background-color var(--t-fast), border-color var(--t-fast); }
 .bs-card:hover:not(:disabled) { background: var(--sel-bg); border-color: var(--sel-border); }
 .bs-card:disabled { opacity: .5; }

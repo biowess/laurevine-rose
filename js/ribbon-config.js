@@ -91,7 +91,7 @@
           row({ t: 'combo', id: 'fontFamily', cmd: 'font.family', label: 'Font', width: 136, options: 'fonts' }, { t: 'combo', id: 'fontSize', cmd: 'font.size', label: 'Font size', width: 52, options: 'sizes' },
             ic('font.grow', 'Increase Font Size', 'a-arrow-up', { en: 'text' }), ic('font.shrink', 'Decrease Font Size', 'a-arrow-down', { en: 'text' })),
           row(ic('font.bold', 'Bold', 'bold', { en: 'text', shortcut: 'Ctrl+B' }), ic('font.italic', 'Italic', 'italic', { en: 'text', shortcut: 'Ctrl+I' }), ic('font.underline', 'Underline', 'underline', { en: 'text', shortcut: 'Ctrl+U' }), ic('font.strike', 'Strikethrough', 'strikethrough', { en: 'text' }), ic('font.subscript', 'Subscript', 'subscript', { en: 'text', shortcut: 'Ctrl+=' }), ic('font.superscript', 'Superscript', 'superscript', { en: 'text', shortcut: 'Ctrl+Shift+=' }), VSEP,
-            ic('font.color', 'Font Color', 'baseline', { en: 'text', split: true, swatch: 'font', menu: colorMenu('font.color', 'Automatic') }), ic('font.highlight', 'Text Highlight Color', 'highlighter', { en: 'text', split: true, swatch: 'highlight', menu: colorMenu('font.highlight', 'No Highlight') }))
+            ic('font.color', 'Font Color', 'font-color', { en: 'text', split: true, swatch: 'font', menu: colorMenu('font.color', 'Automatic') }), ic('font.highlight', 'Text Highlight Color', 'highlighter', { en: 'text', split: true, swatch: 'highlight', menu: colorMenu('font.highlight', 'No Highlight') }))
         )
       ]),
       grp('paragraph', 'Paragraph', 'align-left', [
@@ -124,7 +124,11 @@
         lg('insert.illustration', 'Illustrations', 'pen-tool', { menu: [{ head: 'Annotations' }, M('Callout', 'shape.insert', { shape: 'callout' }, { icon: 'message-square' }), M('Block Arrow', 'shape.insert', { shape: 'arrow' }, { icon: 'arrow-right' }), M('Brace', 'shape.insert', { shape: 'brace' }, { icon: 'braces' }), M('Scale Bar', 'shape.insert', { shape: 'scalebar' }, { icon: 'ruler' })] })
       ]),
       grp('links', 'Links', 'link', [lg('insert.link', 'Link', 'link', {})]),
-      grp('text', 'Text and Symbols', 'type', [lg('insert.textbox', 'Text Box', 'text-cursor-input'), stack(sm('insert.symbol', 'Symbol', 'omega', { menu: { kind: 'symbols', cmd: 'insert.symbol' } }), sm('insert.symbolLibrary', 'Add symbol', 'circle-plus'))])
+      grp('text', 'Text and Symbols', 'type', [
+        lg('insert.textbox', 'Text Box', 'text-cursor-input'),
+        lg('insert.equation', 'Equation', 'sigma', { tip: 'LaTeX Equation: type mathematical expressions and insert high-resolution transparent PNG equations' }),
+        stack(sm('insert.symbol', 'Symbol', 'omega', { menu: { kind: 'symbols', cmd: 'insert.symbol' } }), sm('insert.symbolLibrary', 'Add symbol', 'circle-plus'))
+      ])
     ] },
 
     { id: 'design', label: 'Design', groups: [

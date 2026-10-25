@@ -11,7 +11,7 @@
     export: { title: 'Export', desc: 'Export presentation to standard formats.' },
     setup: { title: 'Setup & Components', desc: 'Re-detect, install or reinstall the PDF converter, remove the managed copy, and view the license.' },
     prefs: { title: 'Preferences', desc: 'Application preferences for this editor: choose how the interface behaves, when your work is saved, how slide shows start and which local service the editor connects to. Changes take effect as soon as you make them.' },
-    about: { title: 'About', desc: `Research Presentation Editor, version ${VERSION} — a browser-based editor for research slides, with figures and plots that export to PowerPoint and PDF through a local Python service. Projects are saved as .rpe.json files.` },
+    about: { title: 'About', desc: `Laurevine Rose, version ${VERSION} — a browser-based editor for research slides, with figures and plots that export to PowerPoint and PDF through a local Python service. Projects are saved as .rpe.json files.` },
   };
   const page = (id) => { const p = PAGES[id] || PAGES.new; return { title: clean(p.title), desc: clean(p.desc) }; };
   const api = { VERSION, clean, PAGES, page };

@@ -1,1 +1,1 @@
-"""Backend package for the Research Presentation Editor."""
+"""Backend package for the Laurevine Rose."""

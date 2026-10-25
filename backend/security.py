@@ -20,7 +20,7 @@ MAX_FIGURE_BYTES = 10 << 20                          # figure / python / latex p
 MAX_CSV_BYTES = (5 << 20) + (64 << 10)               # 5 MB file + multipart framing
 MAX_SOURCE_BYTES = 2 << 20                           # one script / TeX source (checked by the router)
 MAX_PRESENTATION_BYTES = 64 << 20                    # whole documents carry their images
-JOB_PATHS = {FIGURES + p for p in ("render", "export", "python/run", "python/data", "latex/compile", "latex/render")}
+JOB_PATHS = {FIGURES + p for p in ("render", "export", "python/run", "python/data", "latex/compile", "latex/render", "latex/equation")}
 _jobs: Deque[float] = deque()
 
 
