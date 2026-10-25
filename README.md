@@ -38,7 +38,7 @@
 5. [Getting Started](#getting-started)
 6. [Installation](#installation)
    - [6.1 Windows (.exe)](#61-windows-exe)
-   - [6.4 Linux AppImage](#64-linux-appimage)
+   - [6.2 Linux AppImage](#64-linux-appimage)
 7. [Download Integrity (SHA-256)](#download-integrity-sha-256)
 8. [System Requirements](#system-requirements)
 9. [Technology Stack](#technology-stack)
