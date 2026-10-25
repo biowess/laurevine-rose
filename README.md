@@ -541,7 +541,7 @@ components that are not part of the implementation.
 | :--- | :--- | :--- | :--- |
 | `.rpe.json` (project file) | Save / Open | Fully implemented | Native project format; preserves live figure data and source code |
 | `.pptx` (PowerPoint) | Export | Fully implemented | Native OpenXML generation via python-pptx; opens in PowerPoint, Keynote, Google Slides, LibreOffice Impress |
-| `.pptx` (PowerPoint) | Import | Planned | Figures imported from a `.pptx` are treated as static pictures, not live, editable figure records |
+| `.pptx` (PowerPoint) | Import | Beta | Figures imported from a `.pptx` are treated as static pictures, not live, editable figure records |
 | `.pdf` | Export | Fully implemented, requires LibreOffice | Converts the exported presentation to PDF via LibreOffice; native `.pptx` export does not require this step |
 | `.csv` | Import | Fully implemented | Drag-and-drop import into the Structured Plots data grid, with automatic delimiter detection |
 | `.py` (Python figure script) | Export | Fully implemented | Standalone, reproducible script download from Python Figure Studio |
@@ -560,8 +560,8 @@ By design. PowerPoint does not preserve live Matplotlib plots or LaTeX/PGFPlots 
 **Can I edit a figure in a PowerPoint presentation exported from Laurevine Rose?**  
 Yes, within the limitations of the exported format. You can move, resize, or replace the embedded figure image in compatible presentation software, but you cannot directly edit its underlying data or Python/LaTeX source. To regenerate or modify a figure, retain the original `.rpe.json` project file.
 
-**Can I open an existing `.pptx` presentation in Laurevine Rose?**  
-Not yet. Importing existing PowerPoint presentations is not currently implemented. For now, Laurevine Rose is intended for creating presentations within the application and exporting them to `.pptx`. Existing presentations can still be opened and edited in compatible presentation software.
+**Can I open an existing `.pptx` presentation in Laurevine Rose?**
+Yes. Laurevine Rose supports importing existing PowerPoint presentations (`.pptx`), allowing you to bring your slides into the application and customize them. Import compatibility is currently limited, so complex layouts and certain elements may not be preserved perfectly.
 
 **Does the LaTeX/PGFPlots Studio download or install TeX packages automatically?**  
 No. Laurevine Rose does not run `pip`, `tlmgr`, or any package or font downloader on your behalf. If a required LaTeX package is missing, the compiler reports the error, and you can install the missing dependency through your own TeX distribution's package manager.
