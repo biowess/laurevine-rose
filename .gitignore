@@ -45,8 +45,6 @@ run.spec.fedora
 run.spec.fedora-backup
 run.spec.spec
 
-screenshots/
-
 .tools/
 .venv-build/
 .venv-fedora/
