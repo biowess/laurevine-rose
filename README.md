@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/FastAPI-%E2%89%A50.110-009688?style=flat" alt="FastAPI">
   <img src="https://img.shields.io/badge/python--pptx-%E2%89%A51.0-4B8BBE?style=flat" alt="python-pptx">
   <img src="https://img.shields.io/badge/Matplotlib-%E2%89%A53.8-11557C?style=flat" alt="Matplotlib">
-  <img src="https://img.shields.io/badge/License-Custom%20(Source--Available)-lightgrey?style=flat" alt="License: Custom (Source-Available)">
+  <img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg?style=flat" alt="License: Apache 2.0">
 </p>
 
 <h1 align="center">Laurevine Rose</h1>
@@ -735,30 +735,21 @@ documentation; please use the contact address above.
 
 ## License
 
-Laurevine Rose is **proprietary software**. It is **not** distributed under a standard open-source license (such as
-MIT, Apache-2.0, or GPL), and it is not a Creative Commons license either.
+Laurevine Rose is free and open-source software distributed under the **Apache License 2.0**.
 
-It's licensed to you under the **Laurevine Rose Software License Agreement**, a custom license written for this
-project. The license covers Biowess's original work in Laurevine Rose: its source code, architecture, interface
-and visual design, branding, name, artwork, and documentation. Third-party libraries, frameworks, fonts, and
-runtimes bundled with the app stay under their own separate licenses.
+You are free to use, study, modify, and redistribute the software, including for commercial purposes, subject to the terms and conditions of the license. These include retaining applicable copyright and license notices, providing a copy of the license, and documenting modifications where required.
 
-In short, you're granted a free, worldwide, non-exclusive license to install, run, and use Laurevine Rose, read
-its source, and modify it for your own private use. Without written permission from the copyright holder, you
-may not:
+The Apache License 2.0 does not grant permission to use Biowess's trademarks, branding, or product name beyond the rights expressly provided by the license.
 
-- Sell, rent, lease, or charge for Laurevine Rose, or bundle it into a paid product or service.
-- Redistribute it, modified or unmodified, under a different name or as your own work.
-- Copy, extract, or incorporate its source code, design, interface, algorithms, or modules into another project,
-  open-source or otherwise.
-- Remove or alter its copyright and license notices.
-- Use the Laurevine Rose name, logo, or artwork to identify any other product.
+Laurevine Rose incorporates third-party libraries, frameworks, fonts, runtimes, and other components that may be distributed under separate licenses. Applicable third-party license information and notices are available within the application under **File → About → Third-Party Notices**.
 
-Presentations and other content you create with the app remain entirely yours; the license makes no claim over
-your own work. See the [LICENSE](LICENSE.txt) file for the full terms, including how the license terminates on
-a material violation and the warranty disclaimer.
+Presentations and other content you create using Laurevine Rose remain yours. The software's license does not claim ownership of your original creations.
 
-Copyright © 2026 Biowess. All rights reserved in the Original Work as defined in the license.
+For the complete terms and conditions, see the [LICENSE](LICENSE.txt) file.
+
+**Trademarks.** The Laurevine Rose name, logo, and associated branding are trademarks or identifying marks of Biowess and are not covered by the Apache License 2.0. Use, reproduction, or distribution of these marks is subject to the terms of [TRADEMARK.md](TRADEMARK.md). The license to the software does not grant permission to use these marks in ways that suggest endorsement, affiliation, or origin without authorization.
+
+**Copyright © 2026 Biowess.** Licensed under the Apache License, Version 2.0.
 
 ---
 
